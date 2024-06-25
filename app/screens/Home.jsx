@@ -24,7 +24,7 @@ const HomeScreen = () => {
           />
         </View>
         <View style={styles.headerMidView}>
-          <Text style={styles.title}> Home </Text>
+          <Text style={styles.title}> Available Credits </Text>
         </View>
         <View style={styles.headerRightView}>
           <Ionicons
