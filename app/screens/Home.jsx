@@ -1,12 +1,6 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  TouchableOpacityBase,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { COLORS, FONTS } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -16,6 +10,10 @@ const HomeScreen = () => {
 
   const openDrawer = () => {
     navigation.openDrawer();
+  };
+
+  const navigateToNotification = () => {
+    navigation.navigate("Notification");
   };
 
   const reload = () => {};
@@ -36,12 +34,14 @@ const HomeScreen = () => {
           <Text style={styles.title}> Home </Text>
         </View>
         <View style={styles.headerRightView}>
-          <Ionicons
-            style={styles.notificationIcon}
-            name="notifications-outline"
-            size={28}
-            color="#000"
-          />
+          <TouchableOpacity onPress={navigateToNotification}>
+            <Ionicons
+              style={styles.notificationIcon}
+              name="notifications-outline"
+              size={28}
+              color="#000"
+            />
+          </TouchableOpacity>
         </View>
       </View>
       <View style={styles.body}>
@@ -53,53 +53,67 @@ const HomeScreen = () => {
               <Text style={styles.reloadText}>+ Reload</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.ThreeView}>
-            <View>
-              <TouchableOpacity style={{ alignItems: "center" }}>
-                <Image
-                  source={require("../images/AddBill.png")}
-                  style={styles.image}
-                />
-                <Text style={{ fontSize: 12 }}>Add Bill</Text>
-              </TouchableOpacity>
-            </View>
-            <View>
-              <TouchableOpacity style={{ alignItems: "center" }}>
-                <Image
-                  source={require("../images/BillAnalysis.png")}
-                  style={styles.image}
-                />
-                <Text style={{ fontSize: 12 }}>Bill Analysis</Text>
-              </TouchableOpacity>
-            </View>
-            <View>
-              <TouchableOpacity style={{ alignItems: "center" }}>
-                <Image
-                  source={require("../images/AutoBilling.png")}
-                  style={styles.image}
-                />
-                <Text style={{ fontSize: 12 }}>Auto-billing</Text>
-              </TouchableOpacity>
-            </View>
+        </View>
+        <View style={styles.bodyBottom}>
+          <View style={styles.headerContainer}>
+            <Text>Bills</Text>
+            <TouchableOpacity>
+              <Text>View All</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.bodyBottom}></View>
       </View>
-      <View style={styles.footer}></View>
+      <View style={styles.bodyFloatLayer}>
+        <View style={styles.ThreeView}>
+          <View>
+            <TouchableOpacity style={{ alignItems: "center" }}>
+              <Image
+                source={require("../images/AddBill.png")}
+                style={styles.image}
+              />
+              <Text style={{ fontSize: 12 }}>Add Bill</Text>
+            </TouchableOpacity>
+          </View>
+          <View>
+            <TouchableOpacity style={{ alignItems: "center" }}>
+              <Image
+                source={require("../images/BillAnalysis.png")}
+                style={styles.image}
+              />
+              <Text style={{ fontSize: 12 }}>Bill Analysis</Text>
+            </TouchableOpacity>
+          </View>
+          <View>
+            <TouchableOpacity style={{ alignItems: "center" }}>
+              <Image
+                source={require("../images/AutoBilling.png")}
+                style={styles.image}
+              />
+              <Text style={{ fontSize: 12 }}>Auto-billing</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.pay}>
+          <Text style={{ fontWeight: "bold", fontSize: 20 }}>Pay</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   screenView: {
-    backgroundColor: "white",
+    backgroundColor: COLORS.background,
     flex: 1,
   },
   header: {
     paddingVertical: 0,
     paddingHorizontal: 10,
     flexDirection: "row",
-    backgroundColor: "#cca300",
+    backgroundColor: COLORS.primary,
     flex: 1,
     alignItems: "center",
   },
@@ -122,22 +136,37 @@ const styles = StyleSheet.create({
     flex: 15,
   },
   bodyTop: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: COLORS.plain,
     paddingHorizontal: 10,
     justifyContent: "space-between",
     alignItems: "center",
     height: "35%",
   },
   bodyBottom: {
-    backgroundColor: "#f5eed7",
-    flex:1,
-    zIndex:1,
+    backgroundColor: COLORS.background,
+    flex: 1,
+    paddingTop: 80,
+    paddingHorizontal: 20,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   footer: {
     paddingVertical: 0,
     paddingHorizontal: 10,
-    backgroundColor: "grey",
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pay: {
+    backgroundColor: COLORS.primary,
+    width: 100,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 50,
+    borderRadius: 30,
   },
   menuIcon: {
     textShadowColor: "#000",
@@ -145,8 +174,8 @@ const styles = StyleSheet.create({
     textShadowRadius: 1,
   },
   title: {
-    fontWeight: "bold",
-    fontSize: 20,
+    fontWeight: FONTS.header.fontWeight,
+    fontSize: FONTS.header.fontSize,
   },
   notificationIcon: {
     textShadowColor: "#000",
@@ -163,7 +192,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   reloadButton: {
-    backgroundColor: "#cca300",
+    backgroundColor: COLORS.primary,
     borderRadius: 50,
     padding: 15,
     margin: 30,
@@ -172,14 +201,19 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
+  bodyFloatLayer: {
+    position: "absolute",
+    width: "100%",
+    marginHorizontal: "10%",
+    marginTop: "60%",
+  },
   ThreeView: {
     flexDirection: "row",
-    backgroundColor: "#cca300",
+    backgroundColor: COLORS.primary,
     width: "80%",
     justifyContent: "space-around",
     paddingVertical: 10,
     borderRadius: 10,
-    zIndex:2,
     //shadow
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 2 },

@@ -6,7 +6,6 @@ import Navigation from './Navigation';
 export default function App() {
   return (
     <View style={styles.MainContainer}>
-      {/* <Text style={{color:'red',}}>Testing 123</Text> */}
       <Navigation />
     </View>
   );
