@@ -14,8 +14,8 @@ import AutoBilling from "../screens/AutoBilling";
 import BillAnalysis from "../screens/BillAnalysis";
 import BillReminder from "../screens/BillReminder";
 import Setting from "../screens/Setting";
-import MyProfile from "../screens/MyProfile"
-
+import MyProfile from "../screens/MyProfile";
+import RegisterBill from "../screens/RegisterBill";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -86,6 +86,9 @@ export default function Navigation() {
       <Stack.Screen name="Drawer" component={DrawerNavigation} options={{ headerShown: false }}/>
       <Stack.Screen name="Notification" component={Notification} options={{ headerShown: false }}/>
       <Stack.Screen name="MyProfile" component={MyProfile} options={{ headerShown: false }}/>
+      <Stack.Screen name="RegisterBill" component={RegisterBill} options={{ headerShown: false }}/>
+      <Stack.Screen name="BillAnalysis" component={BillAnalysis} options={{ headerShown: false }}/>
+      <Stack.Screen name="AutoBilling" component={AutoBilling} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

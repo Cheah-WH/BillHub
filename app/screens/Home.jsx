@@ -12,10 +12,6 @@ const HomeScreen = () => {
     navigation.openDrawer();
   };
 
-  const navigateToNotification = () => {
-    navigation.navigate("Notification");
-  };
-
   const reload = () => {};
 
   return (
@@ -34,7 +30,7 @@ const HomeScreen = () => {
           <Text style={styles.title}> Home </Text>
         </View>
         <View style={styles.headerRightView}>
-          <TouchableOpacity onPress={navigateToNotification}>
+          <TouchableOpacity onPress={()=>{navigation.navigate("Notification");}}>
             <Ionicons
               style={styles.notificationIcon}
               name="notifications-outline"
@@ -48,7 +44,7 @@ const HomeScreen = () => {
         <View style={styles.bodyTop}>
           <View style={styles.creditView}>
             <Text style={{ fontSize: 23 }}>{"\n"} Available Credits </Text>
-            <Text style={styles.creditText}>{"\n"} Rm688.88 </Text>
+            <Text style={styles.creditText}>{"\n"} RM 688.88 </Text>
             <TouchableOpacity style={styles.reloadButton} onPress={reload}>
               <Text style={styles.reloadText}>+ Reload</Text>
             </TouchableOpacity>
@@ -56,9 +52,9 @@ const HomeScreen = () => {
         </View>
         <View style={styles.bodyBottom}>
           <View style={styles.headerContainer}>
-            <Text>Bills</Text>
+            <Text style={styles.headerText}>Bills</Text>
             <TouchableOpacity>
-              <Text>View All</Text>
+              <Text style={styles.headerText}>View All</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -66,7 +62,7 @@ const HomeScreen = () => {
       <View style={styles.bodyFloatLayer}>
         <View style={styles.ThreeView}>
           <View>
-            <TouchableOpacity style={{ alignItems: "center" }}>
+            <TouchableOpacity style={{ alignItems: "center" }} onPress={()=>{navigation.navigate("RegisterBill")}}>
               <Image
                 source={require("../images/AddBill.png")}
                 style={styles.image}
@@ -75,7 +71,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <View>
-            <TouchableOpacity style={{ alignItems: "center" }}>
+            <TouchableOpacity style={{ alignItems: "center" }} onPress={()=>{navigation.navigate("BillAnalysis")}}>
               <Image
                 source={require("../images/BillAnalysis.png")}
                 style={styles.image}
@@ -84,7 +80,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <View>
-            <TouchableOpacity style={{ alignItems: "center" }}>
+            <TouchableOpacity style={{ alignItems: "center" }} onPress={()=>{navigation.navigate("AutoBilling")}}>
               <Image
                 source={require("../images/AutoBilling.png")}
                 style={styles.image}
@@ -151,6 +147,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginHorizontal:10,
   },
   footer: {
     paddingVertical: 0,
@@ -188,7 +185,7 @@ const styles = StyleSheet.create({
     height: "85%",
   },
   creditText: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: "bold",
   },
   reloadButton: {
@@ -205,7 +202,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     marginHorizontal: "10%",
-    marginTop: "60%",
+    marginTop: "65%",
   },
   ThreeView: {
     flexDirection: "row",
@@ -225,6 +222,12 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
+  headerText: {
+    fontSize:15,
+    fontWeight:'bold',
+    textDecorationLine:'underline',
+  },
+
 });
 
 export default HomeScreen;

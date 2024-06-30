@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Touchable,
+} from "react-native";
 import { COLORS, FONTS } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
@@ -15,18 +22,29 @@ const MyBills = () => {
     <View style={styles.screenView}>
       <View style={styles.header}>
         <View style={styles.headerLeftView}>
-          <AntDesignIcon
-            style={styles.backIcon}
-            name="back"
-            size={28}
-            color="#000"
-            onPress={back}
-          />
+          <TouchableOpacity>
+            <AntDesignIcon
+              style={styles.backIcon}
+              name="back"
+              size={28}
+              color="#000"
+              onPress={back}
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.headerMidView}>
           <Text style={styles.title}> My Bills </Text>
         </View>
-        <View style={styles.headerRightView}></View>
+        <View style={styles.headerRightView}>
+          <TouchableOpacity>
+            <AntDesignIcon
+              style={styles.backIcon}
+              name="filter"
+              size={28}
+              color="#000"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.body}></View>
       <View style={styles.footer}></View>

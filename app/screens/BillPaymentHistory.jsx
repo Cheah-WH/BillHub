@@ -15,18 +15,29 @@ const BillPaymentHistory = () => {
     <View style={styles.screenView}>
       <View style={styles.header}>
         <View style={styles.headerLeftView}>
-          <AntDesignIcon
-            style={styles.backIcon}
-            name="back"
-            size={28}
-            color="#000"
-            onPress={back}
-          />
+          <TouchableOpacity>
+            <AntDesignIcon
+              style={styles.backIcon}
+              name="back"
+              size={28}
+              color="#000"
+              onPress={back}
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.headerMidView}>
           <Text style={styles.title}> Bill Payment History </Text>
         </View>
-        <View style={styles.headerRightView}></View>
+        <View style={styles.headerRightView}>
+          <TouchableOpacity>
+            <AntDesignIcon
+              style={styles.backIcon}
+              name="filter"
+              size={28}
+              color="#000"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.body}></View>
       <View style={styles.footer}></View>
