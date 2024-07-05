@@ -89,6 +89,7 @@ export default function Navigation() {
       <Stack.Screen name="RegisterBill" component={RegisterBill} options={{ headerShown: false }}/>
       <Stack.Screen name="BillAnalysis" component={BillAnalysis} options={{ headerShown: false }}/>
       <Stack.Screen name="AutoBilling" component={AutoBilling} options={{ headerShown: false }}/>
+      <Stack.Screen name="MyBills" component={MyBills} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

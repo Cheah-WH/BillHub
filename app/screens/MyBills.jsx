@@ -1,21 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  Image,
+  FlatList,
   TouchableOpacity,
   StyleSheet,
-  Touchable,
+  Button,
 } from "react-native";
 import { COLORS, FONTS } from "../constant";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import { getBillingCompanies } from "../../backend/api.js";
 
 const MyBills = () => {
   const navigation = useNavigation();
+  const [billingCompanies, setBillingCompanies] = useState([]);
 
   const back = () => {
     navigation.goBack();
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("Now fetching BillingCompanies from BillHub");
+      fetchBillingCompanies();
+    }, [])
+  );
+
+  useEffect(() => {
+    console.log("Billing Companies State: ", billingCompanies);
+  }, [billingCompanies]);
+
+  const fetchBillingCompanies = async () => {
+    try {
+      const data = await getBillingCompanies();
+      setBillingCompanies(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -46,7 +68,24 @@ const MyBills = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.body}></View>
+      <View style={styles.body}>
+        {/* <Button
+          title="consoleLog testing"
+          onPress={() => {
+            console.log("Now printing smtg");
+          }}
+        /> */}
+        <FlatList
+          data={billingCompanies}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <View>
+              <Text style={{ color: "black" }}>{item.Name}</Text>
+              <Text style={{ color: "black" }}>{item.Category}</Text>
+            </View>
+          )}
+        />
+      </View>
       <View style={styles.footer}></View>
     </View>
   );

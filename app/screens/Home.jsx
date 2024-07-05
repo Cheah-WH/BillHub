@@ -53,7 +53,7 @@ const HomeScreen = () => {
         <View style={styles.bodyBottom}>
           <View style={styles.headerContainer}>
             <Text style={styles.headerText}>Bills</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={()=>{navigation.navigate('MyBills')}}>
               <Text style={styles.headerText}>View All</Text>
             </TouchableOpacity>
           </View>
