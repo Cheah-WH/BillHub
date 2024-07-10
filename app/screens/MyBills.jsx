@@ -1,3 +1,5 @@
+//This code has to be moved to RegisterBill
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,

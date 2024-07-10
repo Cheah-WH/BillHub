@@ -6,6 +6,7 @@ export const COLORS = {
     greyBackground: "#D9D9D9",
     plain:"#f2f2f2",
     text: "#000",
+    white:"#fff"
   };
   
   export const FONTS = {

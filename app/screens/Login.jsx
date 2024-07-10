@@ -4,6 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import ImageSlider from "../components/ImageSlider";
 import { COLORS, FONTS } from "../constant";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import { useNavigation } from "@react-navigation/native";
 
 const images = [
   { id: 1, uri: require("../images/login1.png") },
@@ -19,6 +20,7 @@ const back = () => {
 
 const LoginScreen = () => {
   const [section, setSection] = useState(0);
+  const navigation = useNavigation();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -40,7 +42,7 @@ const LoginScreen = () => {
             <ImageSlider images={images} />
           </View>
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.Button}>
+            <TouchableOpacity style={styles.Button} onPress={()=>{navigation.navigate("RegisterAccount");}}>
               <Text style={styles.ButtonText}>Sign Up Now</Text>
             </TouchableOpacity>
             <TouchableOpacity
