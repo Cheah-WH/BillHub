@@ -65,19 +65,20 @@ const BillingCompanySchema = new Schema({
   category: String,
 });
 
-const BillPayerSchema = new Schema({
+const UserSchema = new Schema({
   name: { type: String, required: true },
-  phoneNumber: { type: String, required: true, unique: true },
+  idNumber: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  account_status: { type: String, default: "active" },
 });
 
 // Models
 const BillingCompany = mongoose.model("BillingCompany", BillingCompanySchema);
-const BillPayer = mongoose.model("BillPayer", BillPayerSchema);
+const User = mongoose.model("User", UserSchema);
 
 // API Endpoints
+// Get Billing Companies List
 app.get("/billingcompanies", async (req, res) => {
   console.log("server.js running APP .get billingcompanies");
   try {
@@ -90,39 +91,65 @@ app.get("/billingcompanies", async (req, res) => {
   }
 });
 
-// BillPayer Registration
+// User Registration
 app.post("/register", async (req, res) => {
-  const { name, phoneNumber, email, password } = req.body;
+  const { name, idNumber, phoneNumber, email, password } = req.body;
+
+  // Check if the user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ message: "Email already used to registered an account !" });
+  }
+
+  const existingUser2 = await User.findOne({ phoneNumber});
+  if (existingUser2) {
+    return res.status(400).json({ message: "Phone Number already used to registered an account !" });
+  }
+
+  // Hash the password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const newUser = new User({
+    name,
+    idNumber,
+    phoneNumber,
+    email,
+    password: hashedPassword,
+  });
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newBillPayer = new BillPayer({
-      name,
-      phoneNumber,
-      email,
-      password: hashedPassword,
-    });
-    await newBillPayer.save();
-    res.status(201).json({ message: "BillPayer registered successfully" });
+    const savedUser = await newUser.save();
+    res.status(201).json({ message: "User registered successfully", user: savedUser });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "BillPayer registration failed", error: err });
+    res.status(500).json({ message: "Error registering user", error: err });
   }
 });
 
-// BillPayer Login
+// User Login
 app.post("/login", async (req, res) => {
-  const { phoneNumber, password } = req.body;
+  const { identifier, password } = req.body;
   try {
-    const billPayer = await BillPayer.findOne({ phoneNumber });
-    if (billPayer && (await bcrypt.compare(password, billPayer.password))) {
-      const token = jwt.sign({ billPayerId: billPayer._id }, "your_jwt_secret");
-      res.json({ message: "Login successful", token });
-    } else {
-      res.status(401).json({ message: "Invalid phone number or password" });
+    // Check if the user exists using email or phone number
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { phoneNumber: identifier }],
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials!" });
     }
+
+    // Compare the password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials!" });
+    }
+
+    // If login is successful, you can generate a token (e.g., JWT) or return user data
+    res.status(200).json({ message: "Login successful", user });
   } catch (err) {
-    res.status(500).json({ message: "Login failed", error: err });
+    console.error("Error during login:", err);
+    res.status(500).json({ message: "Server error", error: err });
   }
 });
 
