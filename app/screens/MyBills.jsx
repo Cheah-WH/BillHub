@@ -1,5 +1,3 @@
-//This code has to be moved to RegisterBill
-
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -16,7 +14,6 @@ import { getBillingCompanies } from "../../backend/api.js";
 
 const MyBills = () => {
   const navigation = useNavigation();
-  const [billingCompanies, setBillingCompanies] = useState([]);
 
   const back = () => {
     navigation.goBack();
@@ -24,8 +21,9 @@ const MyBills = () => {
 
   useFocusEffect(
     useCallback(() => {
+      //Fetch my bill
       console.log("Now fetching BillingCompanies from BillHub");
-      fetchBillingCompanies();
+      //fetchBillingCompanies();
     }, [])
   );
 
@@ -33,6 +31,7 @@ const MyBills = () => {
     console.log("Billing Companies State: ", billingCompanies);
   }, [billingCompanies]);
 
+  //Change to fetch myBill
   const fetchBillingCompanies = async () => {
     try {
       const data = await getBillingCompanies();
@@ -71,12 +70,6 @@ const MyBills = () => {
         </View>
       </View>
       <View style={styles.body}>
-        {/* <Button
-          title="consoleLog testing"
-          onPress={() => {
-            console.log("Now printing smtg");
-          }}
-        /> */}
         <FlatList
           data={billingCompanies}
           keyExtractor={(item) => item._id}

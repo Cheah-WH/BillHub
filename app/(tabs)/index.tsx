@@ -1,13 +1,17 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import 'react-native-gesture-handler';
 import Navigation from './Navigation';
+import { AuthProvider } from '../../backend/AuthContext';
+import SplashScreen from "../screens/SplashScreen";
 
 export default function App() {
   return (
-    <View style={styles.MainContainer}>
-      <Navigation />
-    </View>
+    <AuthProvider>
+      <View style={styles.MainContainer}>
+        <Navigation />
+      </View>
+    </AuthProvider>
   );
 }
 

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { COLORS, FONTS } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
+import { AuthContext } from "../../backend/AuthContext";
 
 const MyProfile = () => {
+  const { user } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const back = () => {
@@ -28,7 +30,12 @@ const MyProfile = () => {
         </View>
         <View style={styles.headerRightView}></View>
       </View>
-      <View style={styles.body}></View>
+      <View style={styles.body}>
+       <Text>Name: {user.name}</Text>
+       <Text>NRIC: {user.idNumber}</Text>
+       <Text>Phone Number: {user.phoneNumber}</Text>
+       <Text>Email: {user.email}</Text>
+      </View>
       <View style={styles.footer}></View>
     </View>
   );

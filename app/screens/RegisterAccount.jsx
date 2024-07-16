@@ -14,6 +14,7 @@ import { COLORS, FONTS } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
+import PasswordCriteria from "../components/PasswordCriteria";
 
 // Section Components
 // Section 1
@@ -145,49 +146,52 @@ const SetPassword = ({
     useState(false);
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Setup Password</Text>
-      <View style={styles.passwordContainer}>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-          style={styles.input}
-          secureTextEntry={!isPasswordVisible}
-        />
-        <TouchableOpacity
-          style={styles.eyeButton}
-          onPressIn={() => setIsPasswordVisible(true)}
-          onPressOut={() => setIsPasswordVisible(false)}
-        >
-          <AntDesignIcon
-            name={isPasswordVisible ? "eye" : "eyeo"}
-            size={20}
-            color={COLORS.primary}
+    <ScrollView>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Setup Password</Text>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            style={styles.input}
+            secureTextEntry={!isPasswordVisible}
           />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.passwordContainer}>
-        <TextInput
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm Password"
-          style={styles.input}
-          secureTextEntry={!isConfirmPasswordVisible}
-        />
-        <TouchableOpacity
-          style={styles.eyeButton}
-          onPressIn={() => setIsConfirmPasswordVisible(true)}
-          onPressOut={() => setIsConfirmPasswordVisible(false)}
-        >
-          <AntDesignIcon
-            name={isConfirmPasswordVisible ? "eye" : "eyeo"}
-            size={20}
-            color={COLORS.primary}
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPressIn={() => setIsPasswordVisible(true)}
+            onPressOut={() => setIsPasswordVisible(false)}
+          >
+            <AntDesignIcon
+              name={isPasswordVisible ? "eye" : "eyeo"}
+              size={20}
+              color={COLORS.primary}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm Password"
+            style={styles.input}
+            secureTextEntry={!isConfirmPasswordVisible}
           />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPressIn={() => setIsConfirmPasswordVisible(true)}
+            onPressOut={() => setIsConfirmPasswordVisible(false)}
+          >
+            <AntDesignIcon
+              name={isConfirmPasswordVisible ? "eye" : "eyeo"}
+              size={20}
+              color={COLORS.primary}
+            />
+          </TouchableOpacity>
+        </View>
+        <PasswordCriteria password={password} />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

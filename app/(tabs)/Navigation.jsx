@@ -17,7 +17,7 @@ import Setting from "../screens/Setting";
 import MyProfile from "../screens/MyProfile";
 import RegisterBill from "../screens/RegisterBill";
 import RegisterAccount from "../screens/RegisterAccount";
-
+import SplashScreen from "../screens/SplashScreen";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -84,7 +84,7 @@ function DrawerNavigation() {
 
 export default function Navigation() {
   return (
-    <Stack.Navigator initialRouteName="Drawer" >
+    <Stack.Navigator initialRouteName="SplashScreen" >
       <Stack.Screen name="Drawer" component={DrawerNavigation} options={{ headerShown: false }}/>
       <Stack.Screen name="Notification" component={Notification} options={{ headerShown: false }}/>
       <Stack.Screen name="MyProfile" component={MyProfile} options={{ headerShown: false }}/>
@@ -95,6 +95,7 @@ export default function Navigation() {
       <Stack.Screen name="RegisterAccount" component={RegisterAccount} options={{ headerShown: false }}/>
       <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={Home} options={{ headerShown: false }}/>
+      <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

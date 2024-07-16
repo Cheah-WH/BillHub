@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import Feather from "react-native-vector-icons/Feather";
+import { AuthContext } from "../../backend/AuthContext";
 
 const images = [
   { id: 1, uri: require("../images/login1.png") },
@@ -26,12 +27,13 @@ const images = [
   { id: 5, uri: require("../images/login5.jpg") },
 ];
 
-const LoginScreen = () => {
+const Login = () => {
   const [section, setSection] = useState(0);
   const navigation = useNavigation();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { logout, login } = useContext(AuthContext);
 
   useEffect(() => {
     if (section === 0) {
@@ -44,6 +46,8 @@ const LoginScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       setSection(0);
+      logout(); 
+      console.log("Login Out...");
     }, [])
   );
 
@@ -60,8 +64,9 @@ const LoginScreen = () => {
       });
 
       if (response.status === 200) {
-        Alert.alert("Success", "Login successful");
-        navigation.navigate("Home");
+        console.log("Password Correct, Pass parameter to login function: ",response.data)
+        login(response.data); // Save user data in AsyncStorage
+        navigation.navigate("SplashScreen");
       }
     } catch (error) {
       if (error.response) {
@@ -286,54 +291,54 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
     flex: 20,
-    justifyContent: "space-between",
+    justifyContent: "space-around",
   },
   contentView1: {
+    flexDirection: "row",
     width: "100%",
     alignItems: "center",
-    flexDirection: "row",
-    alignItems: "flex-end",
-    marginTop: 100,
+    marginTop: 80,
+    marginVertical:30,
   },
   contentView3: {
     width: "100%",
-    alignItems: "center",
-  },
-  input: {
-    width: "100%",
-    padding: 10,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.greyBackground,
-    marginBottom: 20,
-    borderRadius: 5,
-  },
-  input2: {
-    padding: 10,
-    width: "88%",
-  },
-  forgotPasswordText: {
-    color: COLORS.primary,
-    textDecorationLine: "underline",
-    marginTop: 10,
-  },
-  footer2: {
-    flex: 5,
-    justifyContent: "center",
-    alignItems: "center",
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: COLORS.primary,
-    backgroundColor: COLORS.greyBackground,
-    borderRadius: 5,
-    marginBottom: 20,
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  input2: {
+    flex: 1,
+    paddingVertical: 15,
   },
   eyeIcon: {
-    marginRight: 15,
+    marginLeft: 10,
+  },
+  forgotPasswordText: {
+    color: COLORS.primary,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  footer2: {
+    alignItems: "center",
+    paddingBottom: 50,
   },
 });
 
-export default LoginScreen;
+export default Login;

@@ -1,25 +1,30 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, TouchableOpacity, Image, StyleSheet, Text } from "react-native";
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
-import MyProfile from "../screens/MyProfile";
+import { AuthContext } from "../../backend/AuthContext";
 
 function CustomDrawerContent(props) {
   const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
   return (
     <DrawerContentScrollView {...props}>
       <View style={styles.contentView}>
         <View style={styles.imageContainer}>
-          <TouchableOpacity onPress={()=>{navigation.navigate("MyProfile")}}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("MyProfile");
+            }}
+          >
             <Image
               source={require("../images/profilePic.jpeg")}
               style={styles.image}
             />
           </TouchableOpacity>
-          <Text style={styles.username}>Cheah_WH</Text>
+          <Text style={styles.username}>{user? user.name: "Username"}</Text>
         </View>
         <View style={styles.listContainer}>
           <DrawerItemList {...props} />
