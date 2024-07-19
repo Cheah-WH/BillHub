@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useContext,
+} from "react";
 import {
   View,
   Text,
@@ -15,6 +21,9 @@ import { COLORS, FONTS } from "../constant";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { getBillingCompanies } from "../../backend/api.js";
+import CustomAlert from "../components/CustomAlert";
+import { AuthContext } from "../../backend/AuthContext";
+import axios from "axios";
 
 const categories = [
   "Postpaid",
@@ -24,16 +33,20 @@ const categories = [
   "Entertainment",
 ];
 
-const RegisterBill = () => {
+const RegisterBill = ({ route }) => {
+  const { bills } = route.params;
   const navigation = useNavigation();
   const [billingCompanies, setBillingCompanies] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [section, setSection] = useState(1);
-  const [selectedBillingCompany, setSelectedBillingCompany] = useState("");
+  const [selectedBillingCompany, setSelectedBillingCompany] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [nickname, setNickname] = useState("");
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alert2Visible, setAlert2Visible] = useState(false);
+  const { user } = useContext(AuthContext);
 
   const back = () => {
     navigation.goBack();
@@ -52,7 +65,7 @@ const RegisterBill = () => {
 
   useEffect(() => {
     if (section === 1) {
-      setSelectedBillingCompany("");
+      setSelectedBillingCompany(null);
     }
   }, [section]);
 
@@ -110,20 +123,67 @@ const RegisterBill = () => {
     setNickname(text);
   };
 
-  const handleRegister = () => {
+  const registerBillRequest = async () => {
+    const userId = user._id;
+    const newBill = {
+      userId,
+      billingCompanyId: selectedBillingCompany._id,
+      accountNumber,
+      nickname,
+      phoneNumber: null,
+      billingDate: null,
+      dueDate: null,
+      outStandingAmount: null,
+      billOwner: null,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://192.168.68.107:3000/registerBill",
+        newBill
+      );
+      if (response.status === 201) {
+        // Bill created successfully
+        Alert.alert("Success", "Bill registered successfully");
+        navigation.navigate("Drawer");
+      } else {
+        // Handle unexpected response status
+        Alert.alert("Error", "Failed to register the bill");
+      }
+    } catch (error) {
+      console.error("Failed to register the bill", error);
+      Alert.alert("Error", "An error occurred while registering the bill");
+    }
+  };
+
+  const handleRegister = async () => {
     if (section === 2) {
       if (accountNumber.trim() === "") {
-        Alert.alert("Validation Error", "Account Number cannot be empty");
+        setAlertVisible(true);
       } else {
-        setSection(section + 1);
+        let foundDuplicate = false;
+        bills.forEach((bill) => {
+          if (bill.accountNumber === accountNumber) {
+            Alert.alert(
+              "The bill with this account number is already registered under your account"
+            );
+            foundDuplicate = true;
+            return;
+          }
+        });
+        if (!foundDuplicate){
+          setSection(section + 1);
+        }
       }
     }
     if (section === 3) {
       if (nickname.trim() === "") {
-        Alert.alert("Account Number will be used as default identification of this bill");
+        setNickname(accountNumber);
+        setAlert2Visible(true);
       } else {
-        console.log("Register", accountNumber,"with nickname", nickname);
+        console.log("Register", accountNumber, "with nickname:", nickname);
       }
+      registerBillRequest();
     }
   };
 
@@ -325,7 +385,7 @@ const RegisterBill = () => {
                 value={accountNumber}
                 editable={false}
               />
-               <TextInput
+              <TextInput
                 style={styles.input}
                 placeholder="Set a nickname for this bill"
                 value={nickname}
@@ -343,6 +403,20 @@ const RegisterBill = () => {
           </View>
         </View>
       )}
+      <CustomAlert
+        visible={alertVisible}
+        title="Error"
+        message="Account number cannot be empty."
+        onConfirm={() => setAlertVisible(false)}
+        onCancel={() => setAlertVisible(false)}
+      />
+      <CustomAlert
+        visible={alert2Visible}
+        title="Note"
+        message="Account Number will be used as default identification for this bill."
+        onConfirm={() => setAlert2Visible(false)}
+        onCancel={() => setAlert2Visible(false)}
+      />
     </>
   );
 };

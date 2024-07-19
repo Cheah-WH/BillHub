@@ -1,11 +1,55 @@
-import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect, useContext, useCallback } from "react";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { COLORS, FONTS } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { AuthContext } from "../../backend/AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
+import axios from "axios";
+import BillItem from "../components/BillItem";
 
 const HomeScreen = () => {
+  const { user } = useContext(AuthContext);
+  const [bills, setBills] = useState([]);
+  const fetchBills = async () => {
+    try {
+      // Fetch the bills for the logged-in user
+      const response = await axios.get(`http://192.168.68.107:3000/bills/${user._id}`);
+      if (response.status === 200) {
+        const billsData = response.data;
+  
+        // Fetch the billing company data for each bill
+        const billsWithCompanyData = await Promise.all(
+          billsData.map(async (bill) => {
+            const companyResponse = await axios.get(`http://192.168.68.107:3000/billingcompanies/${bill.billingCompanyId}`);
+            return {
+              ...bill,
+              company: companyResponse.data,
+            };
+          })
+        );
+  
+        setBills(billsWithCompanyData);
+      } else {
+        Alert.alert("Error", "Failed to retrieve bills");
+      }
+    } catch (error) {
+      console.error("Failed to retrieve bills", error);
+      Alert.alert("Error", "An error occurred while retrieving bills");
+    }
+  };
+  
+  useFocusEffect(
+    useCallback(() => {
+      fetchBills();
+    }, [])
+  );
+
+  useEffect(()=>{
+    console.log("Bills Retrieved: ",bills)
+  },[bills])
+
   const navigation = useNavigation();
 
   const openDrawer = () => {
@@ -30,7 +74,11 @@ const HomeScreen = () => {
           <Text style={styles.title}> Home </Text>
         </View>
         <View style={styles.headerRightView}>
-          <TouchableOpacity onPress={()=>{navigation.navigate("Notification");}}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("Notification");
+            }}
+          >
             <Ionicons
               style={styles.notificationIcon}
               name="notifications-outline"
@@ -53,16 +101,34 @@ const HomeScreen = () => {
         <View style={styles.bodyBottom}>
           <View style={styles.headerContainer}>
             <Text style={styles.headerText}>Bills</Text>
-            <TouchableOpacity onPress={()=>{navigation.navigate('MyBills')}}>
-              <Text style={styles.headerText}>View All</Text>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("MyBills");
+              }}
+            >
+              <Text style={styles.headerText2}>View All</Text>
             </TouchableOpacity>
           </View>
+          {bills.length > 0 ? (
+            <FlatList
+              data={bills}
+              renderItem={({ item }) => <BillItem bill={item} />}
+              keyExtractor={(item) => item._id} 
+            />
+          ) : (
+            <Text style={styles.noBillsText}>No bills available</Text>
+          )}
         </View>
       </View>
       <View style={styles.bodyFloatLayer}>
         <View style={styles.ThreeView}>
           <View>
-            <TouchableOpacity style={{ alignItems: "center" }} onPress={()=>{navigation.navigate("RegisterBill")}}>
+            <TouchableOpacity
+              style={{ alignItems: "center" }}
+              onPress={() => {
+                navigation.navigate("RegisterBill", { bills });
+              }}
+            >
               <Image
                 source={require("../images/AddBill.png")}
                 style={styles.image}
@@ -71,7 +137,12 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <View>
-            <TouchableOpacity style={{ alignItems: "center" }} onPress={()=>{navigation.navigate("BillAnalysis")}}>
+            <TouchableOpacity
+              style={{ alignItems: "center" }}
+              onPress={() => {
+                navigation.navigate("BillAnalysis");
+              }}
+            >
               <Image
                 source={require("../images/BillAnalysis.png")}
                 style={styles.image}
@@ -80,7 +151,12 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <View>
-            <TouchableOpacity style={{ alignItems: "center" }} onPress={()=>{navigation.navigate("AutoBilling")}}>
+            <TouchableOpacity
+              style={{ alignItems: "center" }}
+              onPress={() => {
+                navigation.navigate("AutoBilling");
+              }}
+            >
               <Image
                 source={require("../images/AutoBilling.png")}
                 style={styles.image}
@@ -143,11 +219,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 20,
+    marginBottom:50,
   },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginHorizontal:10,
+    marginHorizontal: 10,
+    marginBottom:5,
   },
   footer: {
     paddingVertical: 0,
@@ -223,11 +301,16 @@ const styles = StyleSheet.create({
     height: 60,
   },
   headerText: {
-    fontSize:15,
-    fontWeight:'bold',
-    textDecorationLine:'underline',
+    fontSize: 15,
+    fontWeight: "bold",
+    textDecorationLine: "underline",
   },
-
+  headerText2: {
+    fontSize: 15,
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+    color: COLORS.primary,
+  },
 });
 
 export default HomeScreen;

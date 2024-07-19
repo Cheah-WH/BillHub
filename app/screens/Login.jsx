@@ -46,7 +46,7 @@ const Login = () => {
   useFocusEffect(
     React.useCallback(() => {
       setSection(0);
-      logout(); 
+      logout();
       console.log("Login Out...");
     }, [])
   );
@@ -64,7 +64,10 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        console.log("Password Correct, Pass parameter to login function: ",response.data)
+        console.log(
+          "Password Correct, Pass parameter to login function: ",
+          response.data
+        );
         login(response.data); // Save user data in AsyncStorage
         navigation.navigate("SplashScreen");
       }
@@ -298,7 +301,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     marginTop: 80,
-    marginVertical:30,
+    marginVertical: 30,
   },
   contentView3: {
     width: "100%",

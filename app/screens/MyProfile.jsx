@@ -31,10 +31,10 @@ const MyProfile = () => {
         <View style={styles.headerRightView}></View>
       </View>
       <View style={styles.body}>
-       <Text>Name: {user.name}</Text>
-       <Text>NRIC: {user.idNumber}</Text>
-       <Text>Phone Number: {user.phoneNumber}</Text>
-       <Text>Email: {user.email}</Text>
+        <Text>Name: {user.name}</Text>
+        <Text>NRIC: {user.idNumber}</Text>
+        <Text>Phone Number: {user.phoneNumber}</Text>
+        <Text>Email: {user.email}</Text>
       </View>
       <View style={styles.footer}></View>
     </View>

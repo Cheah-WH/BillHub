@@ -255,7 +255,7 @@ const RegisterAccount = () => {
   };
 
   const isValidID = (id) => {
-    const idRegex = /^\d{6}[0-1][0-4]\d{4}$/;
+    const idRegex = /^\d{6}[0-1][0-9]\d{4}$/;
     return idRegex.test(id);
   };
 
@@ -369,7 +369,7 @@ const RegisterAccount = () => {
         `For checking purpose: The emailOTP that will be send in email is ${emailOTP}`
       );
 
-      const sendEmail = async () => {
+      const sendEmail = async () => { 
         const emailData = {
           to: email,
           subject: "BillHub Email Verification",
