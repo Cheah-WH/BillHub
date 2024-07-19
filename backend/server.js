@@ -63,6 +63,7 @@ const Schema = mongoose.Schema;
 const BillingCompanySchema = new Schema({
   name: String,
   category: String,
+  bills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bill" }],
 });
 
 const UserSchema = new Schema({
@@ -71,11 +72,58 @@ const UserSchema = new Schema({
   phoneNumber: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  bills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bill" }],
+});
+
+const billSchema = new Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  billingCompanyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "BillingCompany",
+    required: true,
+  },
+  accountNumber: {
+    type: String,
+    required: true,
+  },
+  nickname: {
+    type: String,
+    required: true,
+  },
+  phoneNumber: {
+    type: String,
+    default: null,
+  },
+  billingDate: {
+    type: Date,
+    default: null,
+  },
+  dueDate: {
+    type: Date,
+    default: null,
+  },
+  outStandingAmount: {
+    type: Number,
+    default: null,
+  },
+  billOwner: {
+    type: String,
+    default: null,
+  },
+  status: {
+    type: String,
+    default: "Pending",
+  },
 });
 
 // Models
 const BillingCompany = mongoose.model("BillingCompany", BillingCompanySchema);
 const User = mongoose.model("User", UserSchema);
+const Bill = mongoose.model("Bill", billSchema);
 
 // API Endpoints
 // Get Billing Companies List
@@ -91,6 +139,27 @@ app.get("/billingcompanies", async (req, res) => {
   }
 });
 
+// Get Billing Company By ID
+app.get("/billingcompanies/:billingCompanyId", async (req, res) => {
+  console.log("server.js running APP .get billingcompanies by ID");
+  const billingCompanyId = req.params.billingCompanyId;
+
+  try {
+    // Find the billing company by ID
+    const billingCompany = await BillingCompany.findById(billingCompanyId);
+
+    if (billingCompany) {
+      console.log("Fetched Data from MongoDB: ", billingCompany); // Log fetched data
+      res.json(billingCompany);
+    } else {
+      res.status(404).send("Billing company not found");
+    }
+  } catch (err) {
+    console.log("Error:" + err);
+    res.status(500).send(err);
+  }
+});
+
 // User Registration
 app.post("/register", async (req, res) => {
   const { name, idNumber, phoneNumber, email, password } = req.body;
@@ -98,12 +167,16 @@ app.post("/register", async (req, res) => {
   // Check if the user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res.status(400).json({ message: "Email already used to registered an account !" });
+    return res
+      .status(400)
+      .json({ message: "Email already used to registered an account !" });
   }
 
-  const existingUser2 = await User.findOne({ phoneNumber});
+  const existingUser2 = await User.findOne({ phoneNumber });
   if (existingUser2) {
-    return res.status(400).json({ message: "Phone Number already used to registered an account !" });
+    return res.status(400).json({
+      message: "Phone Number already used to registered an account !",
+    });
   }
 
   // Hash the password
@@ -120,7 +193,9 @@ app.post("/register", async (req, res) => {
 
   try {
     const savedUser = await newUser.save();
-    res.status(201).json({ message: "User registered successfully", user: savedUser });
+    res
+      .status(201)
+      .json({ message: "User registered successfully", user: savedUser });
   } catch (err) {
     res.status(500).json({ message: "Error registering user", error: err });
   }
@@ -150,6 +225,66 @@ app.post("/login", async (req, res) => {
   } catch (err) {
     console.error("Error during login:", err);
     res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Bill Registration
+app.post("/registerBill", async (req, res) => {
+  console.log("Backend is registering the bill");
+  const { userId, billingCompanyId, accountNumber, nickname } = req.body;
+
+  //Validation
+  if (!userId || !billingCompanyId || !accountNumber || !nickname) {
+    return res
+      .status(400)
+      .json({ message: "Missing Information. All fields are required" });
+  }
+
+  try {
+    const newBill = new Bill({
+      userId,
+      billingCompanyId,
+      accountNumber,
+      nickname,
+      phoneNumber: null,
+      billingDate: null,
+      dueDate: null,
+      outStandingAmount: null,
+      billOwner: null,
+    });
+
+    const savedBill = await newBill.save();
+    res.status(201).json(savedBill);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Bill Retrieval
+app.get("/bills/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const bills = await Bill.find({ userId });
+    res.status(200).json(bills);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Bill Information Update 
+app.put("/bills/:id", async (req, res) => {
+  try {
+    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!updatedBill) {
+      return res.status(404).send("Bill not found");
+    }
+    res.json(updatedBill);
+  } catch (err) {
+    console.error("Failed to update bill", err);
+    res.status(500).send("An error occurred while updating the bill");
   }
 });
 
