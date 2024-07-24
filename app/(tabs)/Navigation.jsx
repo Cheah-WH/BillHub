@@ -18,6 +18,7 @@ import MyProfile from "../screens/MyProfile";
 import RegisterBill from "../screens/RegisterBill";
 import RegisterAccount from "../screens/RegisterAccount";
 import SplashScreen from "../screens/SplashScreen";
+import BillDetail from "../screens/BillDetail";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -96,6 +97,7 @@ export default function Navigation() {
       <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={Home} options={{ headerShown: false }}/>
       <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }}/>
+      <Stack.Screen name="BillDetail" component={BillDetail} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

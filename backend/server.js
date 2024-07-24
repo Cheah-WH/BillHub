@@ -110,6 +110,10 @@ const billSchema = new Schema({
     type: Number,
     default: null,
   },
+  overdueAmount: {
+    type: Number,
+    default: null,
+  },
   billOwner: {
     type: String,
     default: null,
@@ -235,9 +239,7 @@ app.post("/registerBill", async (req, res) => {
 
   //Validation
   if (!userId || !billingCompanyId || !accountNumber || !nickname) {
-    return res
-      .status(400)
-      .json({ message: "Missing Information. All fields are required" });
+    return res.status(400).json({ message: "Missing Credential Information." });
   }
 
   try {
@@ -250,6 +252,7 @@ app.post("/registerBill", async (req, res) => {
       billingDate: null,
       dueDate: null,
       outStandingAmount: null,
+      overdueAmount: null,
       billOwner: null,
     });
 
@@ -272,7 +275,7 @@ app.get("/bills/:userId", async (req, res) => {
   }
 });
 
-// Bill Information Update 
+// Bill Information Update (Third Party Company)
 app.put("/bills/:id", async (req, res) => {
   try {
     const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, {
@@ -285,6 +288,56 @@ app.put("/bills/:id", async (req, res) => {
   } catch (err) {
     console.error("Failed to update bill", err);
     res.status(500).send("An error occurred while updating the bill");
+  }
+});
+
+// Bill nickname update (User)
+app.put("/bills/:id/nickname", async (req, res) => {
+  console.log("Backend updating bill's nickname");
+  try {
+    const { nickname } = req.body; // Extract nickname from request body
+
+    // Validate nickname (optional, add validation logic here)
+    if (!nickname || nickname.trim().length === 0) {
+      return res.status(400).send("Nickname cannot be empty");
+    }
+
+    const updatedBill = await Bill.findByIdAndUpdate(
+      req.params.id,
+      { nickname }, // Update only the nickname field
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedBill) {
+      return res.status(404).send("Bill not found");
+    }
+
+    res.json(updatedBill);
+  } catch (err) {
+    console.error("Failed to update bill nickname", err);
+    res.status(500).send("An error occurred while updating the nickname");
+  }
+});
+
+// Bill Deletion
+app.delete("/bills/:id", async (req, res) => {
+  console.log("Backend deleting Bill...");
+  try {
+    const { id } = req.params;
+
+    // Find and delete the bill by ID
+    const deletedBill = await Bill.findByIdAndDelete(id);
+
+    // Check if the bill was found and deleted
+    if (!deletedBill) {
+      return res.status(404).json({ message: "Bill not found" });
+    }
+
+    // Respond with a success message
+    res.status(200).json({ message: "Bill successfully deleted" });
+  } catch (error) {
+    console.error("Failed to delete bill", error);
+    res.status(500).json({ message: error.message });
   }
 });
 

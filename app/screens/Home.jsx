@@ -15,21 +15,25 @@ const HomeScreen = () => {
   const fetchBills = async () => {
     try {
       // Fetch the bills for the logged-in user
-      const response = await axios.get(`http://192.168.68.107:3000/bills/${user._id}`);
+      const response = await axios.get(
+        `http://192.168.68.107:3000/bills/${user._id}`
+      );
       if (response.status === 200) {
         const billsData = response.data;
-  
+
         // Fetch the billing company data for each bill
         const billsWithCompanyData = await Promise.all(
           billsData.map(async (bill) => {
-            const companyResponse = await axios.get(`http://192.168.68.107:3000/billingcompanies/${bill.billingCompanyId}`);
+            const companyResponse = await axios.get(
+              `http://192.168.68.107:3000/billingcompanies/${bill.billingCompanyId}`
+            );
             return {
               ...bill,
               company: companyResponse.data,
             };
           })
         );
-  
+
         setBills(billsWithCompanyData);
       } else {
         Alert.alert("Error", "Failed to retrieve bills");
@@ -39,16 +43,16 @@ const HomeScreen = () => {
       Alert.alert("Error", "An error occurred while retrieving bills");
     }
   };
-  
+
   useFocusEffect(
     useCallback(() => {
       fetchBills();
     }, [])
   );
 
-  useEffect(()=>{
-    console.log("Bills Retrieved: ",bills)
-  },[bills])
+  useEffect(() => {
+    console.log("Bills Retrieved: ", bills);
+  }, [bills]);
 
   const navigation = useNavigation();
 
@@ -112,8 +116,17 @@ const HomeScreen = () => {
           {bills.length > 0 ? (
             <FlatList
               data={bills}
-              renderItem={({ item }) => <BillItem bill={item} />}
-              keyExtractor={(item) => item._id} 
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("BillDetail", { bill: item });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <BillItem bill={item} />
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item._id}
             />
           ) : (
             <Text style={styles.noBillsText}>No bills available</Text>
@@ -219,13 +232,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 20,
-    marginBottom:50,
+    marginBottom: 50,
   },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginHorizontal: 10,
-    marginBottom:5,
+    marginBottom: 5,
   },
   footer: {
     paddingVertical: 0,

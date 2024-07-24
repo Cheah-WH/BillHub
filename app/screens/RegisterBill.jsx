@@ -45,7 +45,6 @@ const RegisterBill = ({ route }) => {
   const [accountNumber, setAccountNumber] = useState("");
   const [nickname, setNickname] = useState("");
   const [alertVisible, setAlertVisible] = useState(false);
-  const [alert2Visible, setAlert2Visible] = useState(false);
   const { user } = useContext(AuthContext);
 
   const back = () => {
@@ -66,6 +65,8 @@ const RegisterBill = ({ route }) => {
   useEffect(() => {
     if (section === 1) {
       setSelectedBillingCompany(null);
+      setAccountNumber("");
+      setNickname("");
     }
   }, [section]);
 
@@ -134,6 +135,7 @@ const RegisterBill = ({ route }) => {
       billingDate: null,
       dueDate: null,
       outStandingAmount: null,
+      overdueAmount: null,
       billOwner: null,
     };
 
@@ -179,13 +181,17 @@ const RegisterBill = ({ route }) => {
     if (section === 3) {
       if (nickname.trim() === "") {
         setNickname(accountNumber);
-        setAlert2Visible(true);
       } else {
-        console.log("Register", accountNumber, "with nickname:", nickname);
+        registerBillRequest();
       }
-      registerBillRequest();
     }
   };
+
+  useEffect(() => {
+    if (nickname === accountNumber && accountNumber !== "") {
+      registerBillRequest();
+    }
+  }, [nickname]);
 
   return (
     <>
@@ -409,13 +415,6 @@ const RegisterBill = ({ route }) => {
         message="Account number cannot be empty."
         onConfirm={() => setAlertVisible(false)}
         onCancel={() => setAlertVisible(false)}
-      />
-      <CustomAlert
-        visible={alert2Visible}
-        title="Note"
-        message="Account Number will be used as default identification for this bill."
-        onConfirm={() => setAlert2Visible(false)}
-        onCancel={() => setAlert2Visible(false)}
       />
     </>
   );

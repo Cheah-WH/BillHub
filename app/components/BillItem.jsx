@@ -9,6 +9,7 @@ const BillItem = ({ bill }) => {
     accountNumber,
     dueDate,
     outStandingAmount,
+    overdueAmount,
     status,
   } = bill;
   const imageURI = company.ImageURL;
@@ -22,6 +23,9 @@ const BillItem = ({ bill }) => {
     ? outStandingAmount.toFixed(2)
     : "0.00";
 
+  // Determine if the bill is overdue
+  const overdue = overdueAmount && overdueAmount > 0;
+
   return (
     <View style={styles.container}>
       <Image source={{ uri: imageURI }} style={styles.image} />
@@ -34,7 +38,7 @@ const BillItem = ({ bill }) => {
       </View>
       <Text>
         {(status === "Approved") ? (
-          <Text style={styles.outstandingAmount}>
+          <Text style={overdue ? styles.overdueAmount : styles.outstandingAmount}>
             RM {formattedOutstandingAmount}
           </Text>
         ) : (
@@ -83,7 +87,13 @@ const styles = StyleSheet.create({
   },
   outstandingAmount: {
     fontSize: 14,
-    color: "#d9534f",
+    color: COLORS.primary,
+    fontWeight: "bold",
+  },
+  overdueAmount: {
+    fontSize: 14,
+    color: "red",
+    fontWeight: "bold",
   },
 });
 
