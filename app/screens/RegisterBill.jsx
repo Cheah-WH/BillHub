@@ -15,6 +15,7 @@ import {
   StyleSheet,
   Modal,
   Alert,
+  StatusBar,
 } from "react-native";
 import { CheckBox } from "react-native-elements";
 import { COLORS, FONTS } from "../constant";
@@ -273,6 +274,7 @@ const RegisterBill = ({ route }) => {
             visible={modalVisible}
             onRequestClose={() => setModalVisible(false)}
           >
+            <StatusBar backgroundColor="rgba(0, 0, 0, 0.5)" barStyle="light-content" />
             <TouchableOpacity
               style={styles.modalOverlay}
               activeOpacity={1}
@@ -529,6 +531,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderWidth: 2,
     borderRadius: 10,
+    paddingHorizontal: 15,
   },
   modalTitle: {
     fontSize: 24,

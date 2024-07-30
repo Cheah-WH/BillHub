@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   KeyboardAvoidingView,
+  ScrollView,
   Platform,
   TextInput,
   Alert,
@@ -120,81 +121,89 @@ const Login = () => {
         </View>
       )}
       {section === 1 && (
-        <View style={styles.screenView}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <View style={styles.screenView}>
-            <View style={styles.header}>
-              <View style={styles.headerLeftView}>
-                <AntDesignIcon
-                  style={styles.backIcon}
-                  name="back"
-                  size={28}
-                  color="#000"
-                  onPress={() => setSection(0)}
-                />
+            <View style={styles.screenView}>
+              <View style={styles.header}>
+                <View style={styles.headerLeftView}>
+                  <AntDesignIcon
+                    style={styles.backIcon}
+                    name="back"
+                    size={28}
+                    color="#000"
+                    onPress={() => setSection(0)}
+                  />
+                </View>
+                <View style={styles.headerMidView}>
+                  <Text style={styles.title}> User Login </Text>
+                </View>
+                <View style={styles.headerRightView}></View>
               </View>
-              <View style={styles.headerMidView}>
-                <Text style={styles.title}> User Login </Text>
-              </View>
-              <View style={styles.headerRightView}></View>
-            </View>
-            <View style={styles.body2}>
-              <KeyboardAvoidingView
-                style={styles.container}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-              >
-                <View style={styles.content}>
-                  <View style={styles.contentView1}>
-                    <Image
-                      source={require("../images/logo.png")}
-                      style={styles.logo}
-                    ></Image>
-                    <Text style={styles.appName}>BillHub</Text>
-                  </View>
-
-                  <View style={styles.contentView3}>
-                    <TextInput
-                      value={identifier}
-                      onChangeText={setIdentifier}
-                      placeholder="Phone Number or Email"
-                      style={styles.input}
-                      keyboardType="email-address"
-                    />
-                    <View style={styles.passwordContainer}>
-                      <TextInput
-                        value={password}
-                        onChangeText={setPassword}
-                        placeholder="Password"
-                        style={styles.input2}
-                        secureTextEntry={!showPassword}
-                      />
-                      <TouchableOpacity
-                        style={styles.eyeIcon}
-                        onPress={() => setShowPassword(!showPassword)}
-                      >
-                        <Feather
-                          name={showPassword ? "eye" : "eye-off"}
-                          size={24}
-                          color={COLORS.primary}
-                        />
-                      </TouchableOpacity>
+              <View style={styles.body2}>
+                <KeyboardAvoidingView
+                  style={styles.container}
+                  behavior={Platform.OS === "ios" ? "padding" : "height"}
+                >
+                  <View style={styles.content}>
+                    <View style={styles.contentView1}>
+                      <Image
+                        source={require("../images/logo.png")}
+                        style={styles.logo}
+                      ></Image>
+                      <Text style={styles.appName}>BillHub</Text>
                     </View>
 
-                    <TouchableOpacity onPress={handleForgotPassword}>
-                      <Text style={styles.forgotPasswordText}>
-                        Forgot Password?
-                      </Text>
+                    <View style={styles.contentView3}>
+                      <TextInput
+                        value={identifier}
+                        onChangeText={setIdentifier}
+                        placeholder="Phone Number or Email"
+                        style={styles.input}
+                        keyboardType="email-address"
+                      />
+                      <View style={styles.passwordContainer}>
+                        <TextInput
+                          value={password}
+                          onChangeText={setPassword}
+                          placeholder="Password"
+                          style={styles.input2}
+                          secureTextEntry={!showPassword}
+                        />
+                        <TouchableOpacity
+                          style={styles.eyeIcon}
+                          onPress={() => setShowPassword(!showPassword)}
+                        >
+                          <Feather
+                            name={showPassword ? "eye" : "eye-off"}
+                            size={24}
+                            color={COLORS.primary}
+                          />
+                        </TouchableOpacity>
+                      </View>
+
+                      <TouchableOpacity onPress={handleForgotPassword}>
+                        <Text style={styles.forgotPasswordText}>
+                          Forgot Password?
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <View style={styles.footer2}>
+                    <TouchableOpacity
+                      style={styles.Button}
+                      onPress={handleLogin}
+                    >
+                      <Text style={styles.ButtonText}>Login</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
-                <View style={styles.footer2}>
-                  <TouchableOpacity style={styles.Button} onPress={handleLogin}>
-                    <Text style={styles.ButtonText}>Login</Text>
-                  </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       )}
     </>
   );

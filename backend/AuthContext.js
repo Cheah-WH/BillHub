@@ -1,17 +1,21 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { storeUserData, getUserData, removeUserData } from './storage';
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { Alert } from "react-native";
+import { storeUserData, getUserData, removeUserData } from "./storage";
+import axios from "axios";
 
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [bills, setBills] = useState([]);
 
   useEffect(() => {
     const loadUser = async () => {
       const { token, user } = await getUserData();
       if (token && user) {
-        setUser(user);
+        await fetchUserData(user._id); //Fetch Latest state of user data from MongoDB
+        fetchBills(user._id);
       }
       setAuthLoading(false);
     };
@@ -22,6 +26,8 @@ const AuthProvider = ({ children }) => {
     const defaultToken = "BillPayer";
     setUser(userData.user);
     await storeUserData(defaultToken, userData.user);
+    fetchBills(userData.user._id);
+    Alert.alert("Welcome Back", userData.name);
   };
 
   const logout = async () => {
@@ -29,12 +35,64 @@ const AuthProvider = ({ children }) => {
     await removeUserData();
     console.log("Removing user data from AsyncStorage...");
   };
+  
+  const fetchUserData = async (userId) => {
+    try {
+      const response = await axios.get(`http://192.168.68.107:3000/users/${userId}`);
+      if (response.status === 200) {
+        const userData = response.data;
+        setUser(userData);
+        await storeUserData("BillPayer", userData);
+      } else {
+        Alert.alert("Error", "Failed to retrieve user data");
+      }
+    } catch (error) {
+      console.error("Failed to retrieve user data", error);
+      Alert.alert("Error", "An error occurred while retrieving user data");
+    }
+  };
+
+  const fetchBills = async (userId) => {
+    try {
+      const response = await axios.get(
+        `http://192.168.68.107:3000/bills/${userId}`
+      );
+      if (response.status === 200) {
+        const billsData = response.data;
+        const billsWithCompanyData = await Promise.all(
+          billsData.map(async (bill) => {
+            const companyResponse = await axios.get(
+              `http://192.168.68.107:3000/billingcompanies/${bill.billingCompanyId}`
+            );
+            return {
+              ...bill,
+              company: companyResponse.data,
+            };
+          })
+        );
+        setBills(billsWithCompanyData);
+      } else {
+        Alert.alert("Error", "Failed to retrieve bills");
+      }
+    } catch (error) {
+      console.error("Failed to retrieve bills", error);
+      Alert.alert("Error", "An error occurred while retrieving bills");
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, authLoading }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, authLoading, bills, setBills }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export { AuthContext, AuthProvider };
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
+export { AuthContext, AuthProvider, useAuth };

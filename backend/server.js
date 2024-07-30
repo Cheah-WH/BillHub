@@ -72,6 +72,7 @@ const UserSchema = new Schema({
   phoneNumber: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  credit: { type: Number, default: 0 },
   bills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bill" }],
 });
 
@@ -135,7 +136,7 @@ app.get("/billingcompanies", async (req, res) => {
   console.log("server.js running APP .get billingcompanies");
   try {
     const data = await BillingCompany.find();
-    console.log("Fetched Data from MongoDB: ", data); // Log fetched data
+    console.log("Fetched Billing Companies from MongoDB: ", data);
     res.json(data);
   } catch (err) {
     console.log("Error:" + err);
@@ -153,7 +154,7 @@ app.get("/billingcompanies/:billingCompanyId", async (req, res) => {
     const billingCompany = await BillingCompany.findById(billingCompanyId);
 
     if (billingCompany) {
-      console.log("Fetched Data from MongoDB: ", billingCompany); // Log fetched data
+      console.log("Fetched User's bills from MongoDB: ", billingCompany);
       res.json(billingCompany);
     } else {
       res.status(404).send("Billing company not found");
@@ -229,6 +230,40 @@ app.post("/login", async (req, res) => {
   } catch (err) {
     console.error("Error during login:", err);
     res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// Route to fetch user's data
+app.get("/users/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user){
+      return res.status(404).json({ message: "User not found"});
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to update user's credit
+app.put("/users/:id/credit", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { amount } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    user.credit = (user.credit + amount).toFixed(2);
+    await user.save();
+
+    res.json(user);
+  } catch (err) {
+    console.error("Failed to update user credit", err);
+    res.status(500).send("An error occurred while updating the user credit");
   }
 });
 

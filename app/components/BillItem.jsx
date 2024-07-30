@@ -12,11 +12,11 @@ const BillItem = ({ bill }) => {
     overdueAmount,
     status,
   } = bill;
-  const imageURI = company.ImageURL;
+  const imageURI = company?.ImageURL;
 
-  // Check if dueDate is not null and format the date
+  // Check if dueDate is not null and format the date as dd/mm/yyyy
   const formattedDueDate = dueDate
-    ? new Date(dueDate).toLocaleDateString()
+    ? new Date(dueDate).toLocaleDateString('en-GB')
     : null;
 
   const formattedOutstandingAmount = outStandingAmount
@@ -31,14 +31,15 @@ const BillItem = ({ bill }) => {
       <Image source={{ uri: imageURI }} style={styles.image} />
       <View style={styles.infoContainer}>
         <Text style={styles.nickname}>{nickname}</Text>
-        <Text style={styles.accountNumber}>{accountNumber}</Text>
         {formattedDueDate && (
-          <Text style={styles.dueDate}>Due Date: {formattedDueDate}</Text>
+          <Text style={styles.dueDate}>{formattedDueDate}</Text>
         )}
       </View>
       <Text>
-        {(status === "Approved") ? (
-          <Text style={overdue ? styles.overdueAmount : styles.outstandingAmount}>
+        {(status === "Approved" || status === "Active") ? (
+          <Text
+            style={overdue ? styles.overdueAmount : styles.outstandingAmount}
+          >
             RM {formattedOutstandingAmount}
           </Text>
         ) : (
@@ -77,9 +78,6 @@ const styles = StyleSheet.create({
   nickname: {
     fontSize: 16,
     fontWeight: "bold",
-  },
-  accountNumber: {
-    fontSize: 12,
   },
   dueDate: {
     fontSize: 14,

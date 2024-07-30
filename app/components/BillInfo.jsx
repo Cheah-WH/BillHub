@@ -175,7 +175,7 @@ const BillInfo = ({ bill }) => {
                     formattedOutstandingAmount === "-"
                       ? styles.infoValue
                       : overdueAmount
-                      ? styles.infoRedValue
+                      ? styles.infoPrimaryValue
                       : outStandingAmount
                       ? styles.infoPrimaryValue
                       : styles.infoGreenValue

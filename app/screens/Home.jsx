@@ -1,18 +1,36 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  RefreshControl,
+} from "react-native";
 import { COLORS, FONTS } from "../constant";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { AuthContext } from "../../backend/AuthContext";
-import { useFocusEffect } from "@react-navigation/native";
-import axios from "axios";
+import { useAuth } from "../../backend/AuthContext";
 import BillItem from "../components/BillItem";
+import axios from "axios";
 
 const HomeScreen = () => {
-  const { user } = useContext(AuthContext);
-  const [bills, setBills] = useState([]);
-  const fetchBills = async () => {
+  const { bills, setBills, user, setUser } = useAuth();
+  const navigation = useNavigation();
+  const [credit, setCredit] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    console.log("user:", user);
+    if (user && user.credit !== undefined) {
+      setCredit(user.credit);
+    }
+  }, [user]);
+
+  const fetchBills = useCallback(async () => {
     try {
       // Fetch the bills for the logged-in user
       const response = await axios.get(
@@ -42,25 +60,53 @@ const HomeScreen = () => {
       console.error("Failed to retrieve bills", error);
       Alert.alert("Error", "An error occurred while retrieving bills");
     }
+  }, [user._id, setBills]);
+
+  const updateCredit = async (amount) => {
+    try {
+      const response = await axios.put(
+        `http://192.168.68.107:3000/users/${user._id}/credit`,
+        { amount }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
   useFocusEffect(
     useCallback(() => {
       fetchBills();
-    }, [])
+    }, [fetchBills])
   );
 
   useEffect(() => {
-    console.log("Bills Retrieved: ", bills);
+    //console.log("Bills Retrieved: ", bills);
   }, [bills]);
-
-  const navigation = useNavigation();
 
   const openDrawer = () => {
     navigation.openDrawer();
   };
 
-  const reload = () => {};
+  const reload = async () => {
+    console.log("Reload is triggered one time ");
+    try {
+      const updatedUser = await updateCredit(parseFloat(100));
+      setUser(updatedUser);
+      Alert.alert("Success", "Credit reload successfully");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      Alert.alert("Error", errorMessage);
+    }
+  };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchBills();
+    setRefreshing(false);
+  }, [fetchBills]);
 
   return (
     <View style={styles.screenView}>
@@ -96,7 +142,10 @@ const HomeScreen = () => {
         <View style={styles.bodyTop}>
           <View style={styles.creditView}>
             <Text style={{ fontSize: 23 }}>{"\n"} Available Credits </Text>
-            <Text style={styles.creditText}>{"\n"} RM 688.88 </Text>
+            <Text style={styles.creditText}>
+              {"\n RM "}
+              {credit.toFixed(2)}
+            </Text>
             <TouchableOpacity style={styles.reloadButton} onPress={reload}>
               <Text style={styles.reloadText}>+ Reload</Text>
             </TouchableOpacity>
@@ -107,7 +156,7 @@ const HomeScreen = () => {
             <Text style={styles.headerText}>Bills</Text>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate("MyBills");
+                navigation.navigate("MyBills", { billData: bills });
               }}
             >
               <Text style={styles.headerText2}>View All</Text>
@@ -127,6 +176,9 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               )}
               keyExtractor={(item) => item._id}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
             />
           ) : (
             <Text style={styles.noBillsText}>No bills available</Text>
@@ -181,7 +233,12 @@ const HomeScreen = () => {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.pay}>
+        <TouchableOpacity
+          style={styles.pay}
+          onPress={() => {
+            navigation.navigate("Payment", { billData: bills });
+          }}
+        >
           <Text style={{ fontWeight: "bold", fontSize: 20 }}>Pay</Text>
         </TouchableOpacity>
       </View>
@@ -249,8 +306,8 @@ const styles = StyleSheet.create({
   },
   pay: {
     backgroundColor: COLORS.primary,
-    width: 100,
-    height: 50,
+    width: 150,
+    height: 55,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 50,
@@ -302,7 +359,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingVertical: 10,
     borderRadius: 10,
-    //shadow
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.8,
@@ -323,6 +379,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textDecorationLine: "underline",
     color: COLORS.primary,
+  },
+  noBillsText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: COLORS.text,
   },
 });
 
