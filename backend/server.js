@@ -61,9 +61,9 @@ db.once("open", () => {
 // Schemas
 const Schema = mongoose.Schema;
 const BillingCompanySchema = new Schema({
-  name: String,
-  category: String,
-  bills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bill" }],
+  name: { type: String, required: true },
+  imageURL: { type: String, required: true },
+  category: { type: String, required: true },
 });
 
 const UserSchema = new Schema({
@@ -76,7 +76,7 @@ const UserSchema = new Schema({
   bills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bill" }],
 });
 
-const billSchema = new Schema({
+const BillSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -125,10 +125,55 @@ const billSchema = new Schema({
   },
 });
 
+const PaymentHistorySchema = new Schema(
+  {
+    transactionId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    billId: {
+      type: Schema.Types.ObjectId,
+      ref: "Bill",
+      required: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    billingCompanyId: {
+      type: Schema.Types.ObjectId,
+      ref: "BillingCompany",
+      required: true,
+    },
+    paymentDate: {
+      type: Date,
+      required: true,
+    },
+    paymentAmount: {
+      type: Number,
+      required: true,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["BillHub Credit", "Debit Card", "Online Banking"],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Completed", "Failed"],
+      default: "Pending",
+    },
+  },
+  { timestamps: true }
+);
+
 // Models
 const BillingCompany = mongoose.model("BillingCompany", BillingCompanySchema);
 const User = mongoose.model("User", UserSchema);
-const Bill = mongoose.model("Bill", billSchema);
+const Bill = mongoose.model("Bill", BillSchema);
+const PaymentHistory = mongoose.model("PaymentHistory", PaymentHistorySchema);
 
 // API Endpoints
 // Get Billing Companies List
@@ -238,8 +283,8 @@ app.get("/users/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
     const user = await User.findById(userId);
-    if (!user){
-      return res.status(404).json({ message: "User not found"});
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
   } catch (error) {
@@ -375,6 +420,52 @@ app.delete("/bills/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Add Bill Payment History
+app.post("/savePaymentHistory", async (req, res) => {
+  try {
+    const paymentHistories = req.body; // Expect an array of payment records
+
+    // Validate input
+    if (!Array.isArray(paymentHistories)) {
+      return res
+        .status(400)
+        .json({ message: "Input should be an array of payment records." });
+    }
+
+    // Create multiple payment histories
+    const result = await PaymentHistory.insertMany(paymentHistories);
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Retrieve the bill payment history
+app.get('/paymentHistory/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Find payment histories for the user and populate the necessary fields
+    const paymentHistories = await PaymentHistory.find({ userId })
+      .populate({
+        path: 'billId',
+        select: 'accountNumber nickname'
+      })
+      .populate({
+        path: 'billingCompanyId',
+        select: 'Name ImageURL Category'
+      });
+
+    res.status(200).json(paymentHistories);
+  } catch (error) {
+    console.error('Error retrieving payment histories:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);

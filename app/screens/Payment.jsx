@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
+  Alert,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -14,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import BillItem2 from "../components/BillItem2";
 import { useAuth } from "../../backend/AuthContext";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const Payment = ({ route }) => {
   const { bills } = useAuth();
@@ -41,114 +43,134 @@ const Payment = ({ route }) => {
       bill._id === billId ? { ...bill, paymentAmount: newAmount } : bill
     );
     setLocalBills(updatedBills);
-    calculateTotalAmount(updatedBills);
+    calculateTotalAmount(updatedBills, selectedBills);
   };
 
-  const calculateTotalAmount = (bills) => {
+  const calculateTotalAmount = (bills, selectedBills) => {
     const total = bills
       .filter((bill) => selectedBills.includes(bill._id))
-      .reduce((total, bill) => total + (bill.paymentAmount || 0), 0);
+      .reduce(
+        (total, bill) =>
+          total + (bill.paymentAmount || bill.outStandingAmount || 0),
+        0
+      );
     setTotalSelectedAmount(total);
   };
 
   const handleCheckboxChange = (bill) => {
     const newSelectedBills = [...selectedBills];
     const index = newSelectedBills.indexOf(bill._id);
-    let updatedAmount = totalSelectedAmount;
 
     if (index > -1) {
       newSelectedBills.splice(index, 1);
-      updatedAmount -= bill.paymentAmount || bill.outStandingAmount;
     } else {
       newSelectedBills.push(bill._id);
-      updatedAmount += bill.paymentAmount || bill.outStandingAmount;
     }
 
     setSelectedBills(newSelectedBills);
-    setTotalSelectedAmount(updatedAmount);
+    calculateTotalAmount(localBills, newSelectedBills);
+  };
+
+  const handlePayNow = () => {
+    const selectedBillData = localBills.filter((bill) =>
+      selectedBills.includes(bill._id)
+    );
+
+    // Validate payment amounts
+    for (const bill of selectedBillData) {
+      if (
+        (bill.paymentAmount && bill.paymentAmount < 1) ||
+        (!bill.paymentAmount && bill.outStandingAmount < 1)
+      ) {
+        Alert.alert(
+          "Invalid Amount",
+          "Please ensure all payment amounts are at least RM 1.00",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+    }
+
+    navigation.navigate("PaymentConfirmation", { selectedBillData });
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <View style={styles.screenView}>
-        <View style={styles.header}>
-          <View style={styles.headerLeftView}>
-            <TouchableOpacity>
-              <AntDesignIcon
-                style={styles.backIcon}
-                name="back"
-                size={28}
-                color="#000"
-                onPress={back}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.headerMidView}>
-            <Text style={styles.title}> Payment </Text>
-          </View>
-          <View style={styles.headerRightView}></View>
-        </View>
-        <View style={styles.body}>
-          <View style={styles.bodyTop}>
-            <FlatList
-              data={localBills}
-              keyExtractor={(bill) => bill._id}
-              renderItem={({ item }) => (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    paddingHorizontal: 10,
-                  }}
-                >
-                  <BillItem2
-                    bill={item}
-                    onPaymentAmountChange={updatePaymentAmount} // Pass the function as a prop
-                  />
-                  <View style={styles.checkboxView}>
-                    {(item.status === "Active" ||
-                      item.status === "Approved") && (
-                      <Checkbox
-                        value={selectedBills.includes(item._id)}
-                        onValueChange={() => handleCheckboxChange(item)}
-                        color={
-                          selectedBills.includes(item._id)
-                            ? COLORS.primary
-                            : undefined
-                        }
-                      />
-                    )}
-                  </View>
-                </View>
-              )}
+    <View style={styles.screenView}>
+      <View style={styles.header}>
+        <View style={styles.headerLeftView}>
+          <TouchableOpacity>
+            <AntDesignIcon
+              style={styles.backIcon}
+              name="back"
+              size={28}
+              color="#000"
+              onPress={back}
             />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.headerMidView}>
+          <Text style={styles.title}> Payment </Text>
+        </View>
+        <View style={styles.headerRightView}></View>
+      </View>
+      <View style={styles.body}>
+        <View style={styles.bodyTop}>
+        <KeyboardAvoidingView behavior="padding">
+          <FlatList
+            data={localBills}
+            keyExtractor={(bill) => bill._id}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingHorizontal: 10,
+                }}
+              >
+                <BillItem2
+                  bill={item}
+                  onPaymentAmountChange={updatePaymentAmount} // Pass the function as a prop
+                />
+                <View style={styles.checkboxView}>
+                  {(item.status === "Active" || item.status === "Approved") && (
+                    <Checkbox
+                      value={selectedBills.includes(item._id)}
+                      onValueChange={() => handleCheckboxChange(item)}
+                      color={
+                        selectedBills.includes(item._id)
+                          ? COLORS.primary
+                          : undefined
+                      }
+                    />
+                  )}
+                </View>
+              </View>
+            )}
+          />
+          </KeyboardAvoidingView>
+        </View>
+        <View style={styles.bodyMiddle}></View>
+        <View style={styles.bodyBottom}>
+          <View style={styles.bottomRow1}>
+            <Text style={styles.boldText}>Total Amount</Text>
+            <Text style={styles.boldText}>
+              RM {totalSelectedAmount.toFixed(2)}
+            </Text>
           </View>
-          <View style={styles.bodyMiddle}></View>
-          <View style={styles.bodyBottom}>
-            <View style={styles.bottomRow1}>
-              <Text style={styles.boldText}>Total Amount</Text>
-              <Text style={styles.boldText}>
-                RM {totalSelectedAmount.toFixed(2)}
-              </Text>
-            </View>
-            <View style={styles.bottomRow2}>
-              <Text style={styles.shadowText}>
-                {selectedBills.length} bills are selected
-              </Text>
-            </View>
-            <View style={styles.bottomRow3}>
-              <TouchableOpacity style={styles.payButton}>
-                <Text style={styles.payText}>Pay Now</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.bottomRow2}>
+            <Text style={styles.shadowText}>
+              {selectedBills.length} bills are selected
+            </Text>
+          </View>
+          <View style={styles.bottomRow3}>
+            <TouchableOpacity style={styles.payButton} onPress={handlePayNow}>
+              <Text style={styles.payText}>Pay Now</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

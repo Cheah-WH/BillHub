@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Modal, TextInput, Aler
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Importing the icon library
 import { COLORS, FONTS } from "../constant";
 
-const BillItem2 = ({ bill,onPaymentAmountChange }) => {
+const BillItem2 = ({ bill, onPaymentAmountChange }) => {
   const {
     company,
     nickname,
@@ -16,7 +16,15 @@ const BillItem2 = ({ bill,onPaymentAmountChange }) => {
   } = bill;
   const imageURI = company?.ImageURL;
 
-  const formattedDueDate = dueDate ? new Date(dueDate).toLocaleDateString() : null;
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const formattedDueDate = dueDate ? formatDate(dueDate) : null;
   const formattedOutstandingAmount = outStandingAmount ? outStandingAmount.toFixed(2) : "0.00";
   const overdue = overdueAmount && overdueAmount > 0;
 
@@ -92,7 +100,7 @@ const BillItem2 = ({ bill,onPaymentAmountChange }) => {
         </TouchableOpacity>
       </View>
       )}
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+      <Modal visible={isModalVisible} transparent={true} animationType="slide" onRequestClose={handleCancel}>
         <View style={styles.modalContainer}>
           <StatusBar backgroundColor="rgba(0, 0, 0, 0.5)" barStyle="light-content" />
           <View style={styles.modalContent}>
@@ -109,6 +117,7 @@ const BillItem2 = ({ bill,onPaymentAmountChange }) => {
               onChangeText={setNewPaymentAmount}
               keyboardType="numeric"
               placeholder="Enter amount to pay"
+              onFocus={()=> setIsModalVisible(true)} //Ensure modal stay open
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity style={styles.modalButtonCancel} onPress={handleCancel}>

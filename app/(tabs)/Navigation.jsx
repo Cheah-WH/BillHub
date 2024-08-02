@@ -20,6 +20,7 @@ import RegisterAccount from "../screens/RegisterAccount";
 import SplashScreen from "../screens/SplashScreen";
 import BillDetail from "../screens/BillDetail";
 import Payment from "../screens/Payment";
+import PaymentConfirmation from "../screens/PaymentConfirmation";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -100,6 +101,7 @@ export default function Navigation() {
       <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="BillDetail" component={BillDetail} options={{ headerShown: false }}/>
       <Stack.Screen name="Payment" component={Payment} options={{ headerShown: false }}/>
+      <Stack.Screen name="PaymentConfirmation" component={PaymentConfirmation} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

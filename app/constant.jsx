@@ -19,5 +19,6 @@ export const COLORS = {
     },
   };
   
+  export const serverIPV4 = "192.168.0.15"; //Change according to environment
 
   

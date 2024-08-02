@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import ImageSlider from "../components/ImageSlider";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
@@ -59,7 +59,7 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post("http://192.168.68.107:3000/login", {
+      const response = await axios.post(`http://${serverIPV4}:3000/login`, {
         identifier,
         password,
       });

@@ -90,7 +90,11 @@ const BillInfo = ({ bill }) => {
     setEditMode(false);
     console.log("Saving changes of bill");
     if (newNickname !== nickname) {
-      saveNickname();
+      if(newNickname !== ""){
+        saveNickname();
+      } else{
+        Alert.alert("Nickname cannot be empty")
+      }
     } else {
       Alert.alert("No changes have been made to the bill !");
     }
