@@ -13,9 +13,10 @@ import {
   Modal,
   Button,
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { FontAwesome5 } from "@expo/vector-icons";
-import axios from "axios"; // Make sure to install axios
+import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 
 const BillInfo = ({ bill }) => {
   const {
@@ -30,6 +31,7 @@ const BillInfo = ({ bill }) => {
     billOwner,
   } = bill;
 
+  const navigation = useNavigation();
   const [isEditMode, setEditMode] = useState(false);
   const [newNickname, setNewNickname] = useState(nickname);
   const [modalVisible, setModalVisible] = useState(false);
@@ -90,10 +92,10 @@ const BillInfo = ({ bill }) => {
     setEditMode(false);
     console.log("Saving changes of bill");
     if (newNickname !== nickname) {
-      if(newNickname !== ""){
+      if (newNickname !== "") {
         saveNickname();
-      } else{
-        Alert.alert("Nickname cannot be empty")
+      } else {
+        Alert.alert("Nickname cannot be empty");
       }
     } else {
       Alert.alert("No changes have been made to the bill !");
@@ -103,7 +105,7 @@ const BillInfo = ({ bill }) => {
   const saveNickname = async () => {
     try {
       const response = await axios.put(
-        `http://192.168.68.107:3000/bills/${_id}/nickname`,
+        `http://${serverIPV4}:3000/bills/${_id}/nickname`,
         {
           id: _id,
           nickname: newNickname,
@@ -235,7 +237,10 @@ const BillInfo = ({ bill }) => {
               <FontAwesome5 name="file-download" size={16} color="black" />
               <Text style={styles.actionText}>Download</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={()=>navigation.navigate("BillPaymentHistory2", { billId: _id })}
+            >
               <FontAwesome5 name="eye" size={16} color="black" />
               <Text style={styles.actionText}>History</Text>
             </TouchableOpacity>
@@ -259,7 +264,7 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: "center",
     alignItems: "center",
-    marginTop:50,
+    marginTop: 50,
   },
   saveButton: {
     backgroundColor: COLORS.primary,

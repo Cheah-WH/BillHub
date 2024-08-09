@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet,Alert } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS,serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import BillInfo from "../components/BillInfo";
@@ -15,7 +15,7 @@ const BillDetail = ({ route }) => {
   const deleteBill = async (billId) => {
     try {
       const response = await axios.delete(
-        `http://192.168.68.107:3000/bills/${billId}`
+        `http://${serverIPV4}:3000/bills/${billId}`
       );
       console.log("Bill deleted", response.data);
     } catch (error) {

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { serverIPV4 } from "../app/constant";
 
 const api = axios.create({
-  baseURL: "http://192.168.68.107:3000",
+  baseURL: `http://${serverIPV4}:3000`,
 });
 
 export const getBillingCompanies = async () => {

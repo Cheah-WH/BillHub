@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { Alert } from "react-native";
 import { storeUserData, getUserData, removeUserData } from "./storage";
 import axios from "axios";
+import { serverIPV4 } from "../app/constant";
 
 const AuthContext = createContext();
 
@@ -38,7 +39,7 @@ const AuthProvider = ({ children }) => {
   
   const fetchUserData = async (userId) => {
     try {
-      const response = await axios.get(`http://192.168.68.107:3000/users/${userId}`);
+      const response = await axios.get(`http://${serverIPV4}:3000/users/${userId}`);
       if (response.status === 200) {
         const userData = response.data;
         setUser(userData);
@@ -55,14 +56,14 @@ const AuthProvider = ({ children }) => {
   const fetchBills = async (userId) => {
     try {
       const response = await axios.get(
-        `http://192.168.68.107:3000/bills/${userId}`
+        `http://${serverIPV4}:3000/bills/${userId}`
       );
       if (response.status === 200) {
         const billsData = response.data;
         const billsWithCompanyData = await Promise.all(
           billsData.map(async (bill) => {
             const companyResponse = await axios.get(
-              `http://192.168.68.107:3000/billingcompanies/${bill.billingCompanyId}`
+              `http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`
             );
             return {
               ...bill,

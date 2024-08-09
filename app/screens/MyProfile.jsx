@@ -13,6 +13,13 @@ const MyProfile = () => {
     navigation.goBack();
   };
 
+  const renderField = (label, value) => (
+    <View style={styles.fieldContainer}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldValue}>{value}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.screenView}>
       <View style={styles.header}>
@@ -26,15 +33,15 @@ const MyProfile = () => {
           />
         </View>
         <View style={styles.headerMidView}>
-          <Text style={styles.title}> My Profile </Text>
+          <Text style={styles.title}>My Profile</Text>
         </View>
         <View style={styles.headerRightView}></View>
       </View>
       <View style={styles.body}>
-        <Text>Name: {user.name}</Text>
-        <Text>NRIC: {user.idNumber}</Text>
-        <Text>Phone Number: {user.phoneNumber}</Text>
-        <Text>Email: {user.email}</Text>
+        {renderField("Name", user.name)}
+        {renderField("NRIC", user.idNumber)}
+        {renderField("Phone Number", user.phoneNumber)}
+        {renderField("Email", user.email)}
       </View>
       <View style={styles.footer}></View>
     </View>
@@ -51,8 +58,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     flexDirection: "row",
     backgroundColor: COLORS.primary,
-    flex: 1,
     alignItems: "center",
+    height: 40,
   },
   headerLeftView: {
     justifyContent: "center",
@@ -68,16 +75,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   body: {
-    paddingVertical: 0,
-    paddingHorizontal: 0,
+    padding: 20,
     flex: 15,
   },
   footer: {
     paddingVertical: 0,
     paddingHorizontal: 10,
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    flex: 1,
   },
   backIcon: {
     textShadowColor: "#000",
@@ -87,6 +93,20 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: FONTS.header.fontWeight,
     fontSize: FONTS.header.fontSize,
+  },
+  fieldContainer: {
+    flexDirection: "row",
+    marginVertical: 5,
+    justifyContent: "space-between",
+  },
+  fieldLabel: {
+    fontSize:15,
+    fontWeight: "bold",
+    color: COLORS.text,
+  },
+  fieldValue: {
+    fontSize:15,
+    color: COLORS.text,
   },
 });
 

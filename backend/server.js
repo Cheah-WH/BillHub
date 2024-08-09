@@ -22,7 +22,6 @@ app.use(cors());
 
 // Endpoint to send email
 app.post("/send-email", async (req, res) => {
-  console.log("Testing 123 /send email is called");
   const { to, subject, text, html } = req.body;
 
   // Email options
@@ -41,7 +40,7 @@ app.post("/send-email", async (req, res) => {
     console.log("Email sent: " + info.response);
     res.status(200).send("Email sent successfully");
   } catch (error) {
-    console.error("Error sending email:", error.message);
+    //console.error("Error sending email:", error.message);
     res.status(500).send("Failed to send email: " + error.message);
   }
 });
@@ -178,10 +177,10 @@ const PaymentHistory = mongoose.model("PaymentHistory", PaymentHistorySchema);
 // API Endpoints
 // Get Billing Companies List
 app.get("/billingcompanies", async (req, res) => {
-  console.log("server.js running APP .get billingcompanies");
+  //console.log("server.js running APP .get billingcompanies");
   try {
     const data = await BillingCompany.find();
-    console.log("Fetched Billing Companies from MongoDB: ", data);
+    //console.log("Fetched Billing Companies from MongoDB: ", data);
     res.json(data);
   } catch (err) {
     console.log("Error:" + err);
@@ -191,7 +190,7 @@ app.get("/billingcompanies", async (req, res) => {
 
 // Get Billing Company By ID
 app.get("/billingcompanies/:billingCompanyId", async (req, res) => {
-  console.log("server.js running APP .get billingcompanies by ID");
+  //console.log("server.js running APP .get billingcompanies by ID");
   const billingCompanyId = req.params.billingCompanyId;
 
   try {
@@ -199,7 +198,7 @@ app.get("/billingcompanies/:billingCompanyId", async (req, res) => {
     const billingCompany = await BillingCompany.findById(billingCompanyId);
 
     if (billingCompany) {
-      console.log("Fetched User's bills from MongoDB: ", billingCompany);
+      //console.log("Fetched User's bills from MongoDB: ", billingCompany);
       res.json(billingCompany);
     } else {
       res.status(404).send("Billing company not found");
@@ -314,7 +313,6 @@ app.put("/users/:id/credit", async (req, res) => {
 
 // Bill Registration
 app.post("/registerBill", async (req, res) => {
-  console.log("Backend is registering the bill");
   const { userId, billingCompanyId, accountNumber, nickname } = req.body;
 
   //Validation
@@ -373,7 +371,6 @@ app.put("/bills/:id", async (req, res) => {
 
 // Bill nickname update (User)
 app.put("/bills/:id/nickname", async (req, res) => {
-  console.log("Backend updating bill's nickname");
   try {
     const { nickname } = req.body; // Extract nickname from request body
 
@@ -401,7 +398,6 @@ app.put("/bills/:id/nickname", async (req, res) => {
 
 // Bill Deletion
 app.delete("/bills/:id", async (req, res) => {
-  console.log("Backend deleting Bill...");
   try {
     const { id } = req.params;
 
@@ -443,29 +439,50 @@ app.post("/savePaymentHistory", async (req, res) => {
   }
 });
 
-// Retrieve the bill payment history
-app.get('/paymentHistory/:userId', async (req, res) => {
+// Retrieve the bill payments history of a user
+app.get("/paymentHistory/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
 
     // Find payment histories for the user and populate the necessary fields
     const paymentHistories = await PaymentHistory.find({ userId })
       .populate({
-        path: 'billId',
-        select: 'accountNumber nickname'
+        path: "billId",
+        select: "accountNumber nickname",
       })
       .populate({
-        path: 'billingCompanyId',
-        select: 'Name ImageURL Category'
+        path: "billingCompanyId",
+        select: "Name ImageURL Category",
       });
 
     res.status(200).json(paymentHistories);
   } catch (error) {
-    console.error('Error retrieving payment histories:', error);
-    res.status(500).json({ message: 'Server error', error });
+    console.error("Error retrieving payment histories:", error);
+    res.status(500).json({ message: "Server error", error });
   }
 });
 
+// Retrieve the bill payment history based on billId
+app.get("/paymentHistory2/:billId", async (req, res) => {
+  try {
+    const billId = req.params.billId;
+
+    const paymentHistories = await PaymentHistory.find({ billId })
+      .populate({
+        path: "billId",
+        select: "accountNumber nickname",
+      })
+      .populate({
+        path: "billingCompanyId",
+        select: "Name ImageURL Category",
+      });
+
+    res.status(200).json(paymentHistories);
+  } catch (error) {
+    console.error("Error retrieving payment histories:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);

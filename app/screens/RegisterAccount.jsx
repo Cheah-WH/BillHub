@@ -10,7 +10,7 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
@@ -314,7 +314,7 @@ const RegisterAccount = () => {
       // Register User Account
       try {
         const response = await axios.post(
-          "http://192.168.68.107:3000/register",
+          `http://${serverIPV4}:3000/register`,
           {
             name,
             idNumber: id,
@@ -379,7 +379,7 @@ const RegisterAccount = () => {
 
         try {
           const response = await axios.post(
-            "http://192.168.68.107:3000/send-email",
+            `http://${serverIPV4}:3000/send-email`,
             emailData
           );
           Alert.alert("Email Sent", "Please check your email for OTP.");

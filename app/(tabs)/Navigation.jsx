@@ -10,6 +10,7 @@ import Home from "../screens/Home.jsx";
 import Notification from "../screens/Notification";
 import MyBills from "../screens/MyBills";
 import BillPaymentHistory from "../screens/BillPaymentHistory";
+import BillPaymentHistory2 from "../screens/BillPaymentHistory2";
 import AutoBilling from "../screens/AutoBilling";
 import BillAnalysis from "../screens/BillAnalysis";
 import BillReminder from "../screens/BillReminder";
@@ -102,6 +103,7 @@ export default function Navigation() {
       <Stack.Screen name="BillDetail" component={BillDetail} options={{ headerShown: false }}/>
       <Stack.Screen name="Payment" component={Payment} options={{ headerShown: false }}/>
       <Stack.Screen name="PaymentConfirmation" component={PaymentConfirmation} options={{ headerShown: false }}/>
+      <Stack.Screen name="BillPaymentHistory2" component={BillPaymentHistory2} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

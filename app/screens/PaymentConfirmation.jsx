@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import BillItem3 from "../components/BillItem3";
@@ -44,7 +44,7 @@ const PaymentConfirmation = ({ route }) => {
       }));
 
       const response = await axios.post(
-        "http://192.168.68.107:3000/savePaymentHistory",
+        `http://${serverIPV4}:3000/savePaymentHistory`,
         paymentHistories,
         {
           headers: {

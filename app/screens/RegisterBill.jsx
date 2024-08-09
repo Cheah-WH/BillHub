@@ -18,7 +18,7 @@ import {
   StatusBar,
 } from "react-native";
 import { CheckBox } from "react-native-elements";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { getBillingCompanies } from "../../backend/api.js";
@@ -142,7 +142,7 @@ const RegisterBill = ({ route }) => {
 
     try {
       const response = await axios.post(
-        "http://192.168.68.107:3000/registerBill",
+        `http://${serverIPV4}:3000/registerBill`,
         newBill
       );
       if (response.status === 201) {

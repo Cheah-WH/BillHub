@@ -14,7 +14,8 @@ import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
 
-const BillPaymentHistory = () => {
+const BillPaymentHistory2 = ({ route }) => {
+  const { billId } = route.params;
   const navigation = useNavigation();
   const { user } = useAuth();
   const [paymentHistory, setPaymentHistory] = useState([]);
@@ -30,7 +31,7 @@ const BillPaymentHistory = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://${serverIPV4}:3000/paymentHistory/${user._id}`
+        `http://${serverIPV4}:3000/paymentHistory2/${billId}`
       );
       setPaymentHistory(response.data);
       setLoading(false);
@@ -43,9 +44,10 @@ const BillPaymentHistory = () => {
   };
 
   useEffect(() => {
-    console.log("User id: ", user._id)
-    fetchPaymentHistory();
-  }, [user]);
+    if (billId) {
+      fetchPaymentHistory();
+    }
+  }, [billId]);
 
   useEffect(() => {
     if (paymentHistory.length) {
@@ -146,6 +148,13 @@ const BillPaymentHistory = () => {
           >
             <Text>Loading...</Text>
           </View>
+        ) : paymentHistory.length === 0 ? (
+          <View
+            style={{ justifyContent: "center", alignItems: "center", flex: 1, padding:20 }}
+          >
+            <Text>No payment history found.</Text>
+            <Text>Start to make payment to view payment history.</Text>
+          </View>
         ) : (
           <FlatList
             data={Object.entries(groupedHistory).map(([monthYear, data]) => ({
@@ -194,7 +203,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     paddingHorizontal: 0,
     flex: 15,
-    marginBottom:15,
+    marginBottom: 15,
   },
   backIcon: {
     textShadowColor: "#000",
@@ -249,4 +258,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BillPaymentHistory;
+export default BillPaymentHistory2;

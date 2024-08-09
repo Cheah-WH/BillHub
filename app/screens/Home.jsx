@@ -9,7 +9,7 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -34,7 +34,7 @@ const HomeScreen = () => {
     try {
       // Fetch the bills for the logged-in user
       const response = await axios.get(
-        `http://192.168.68.107:3000/bills/${user._id}`
+        `http://${serverIPV4}:3000/bills/${user._id}`
       );
       if (response.status === 200) {
         const billsData = response.data;
@@ -43,7 +43,7 @@ const HomeScreen = () => {
         const billsWithCompanyData = await Promise.all(
           billsData.map(async (bill) => {
             const companyResponse = await axios.get(
-              `http://192.168.68.107:3000/billingcompanies/${bill.billingCompanyId}`
+              `http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`
             );
             return {
               ...bill,
@@ -65,7 +65,7 @@ const HomeScreen = () => {
   const updateCredit = async (amount) => {
     try {
       const response = await axios.put(
-        `http://192.168.68.107:3000/users/${user._id}/credit`,
+        `http://${serverIPV4}:3000/users/${user._id}/credit`,
         { amount }
       );
       return response.data;
