@@ -15,6 +15,7 @@ import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
 import { Picker } from "@react-native-picker/picker";
 import BillPieChart from "../components/BillPieChart";
+import BillLineChart from "../components/BillLineChart";
 
 const BillAnalysis = () => {
   const navigation = useNavigation();
@@ -27,6 +28,11 @@ const BillAnalysis = () => {
   const [loading, setLoading] = useState(true);
   const [pieChartData, setPieChartData] = useState([]);
   const [totalPaymentAmount, setTotalPaymentAmount] = useState(0); // State for total payment amount
+
+  const lineChartData = {
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun","July","Aug","Sep","Oct"],
+    values: [100, 200, 150, 300, 250, 400,500, 600,700,800,900],
+  };
 
   const back = () => {
     navigation.goBack();
@@ -123,15 +129,18 @@ const BillAnalysis = () => {
         <View style={styles.headerRightView}></View>
       </View>
       <View style={styles.body}>
-        <Picker
-          selectedValue={selectedMonth}
-          style={styles.picker}
-          onValueChange={(itemValue) => setSelectedMonth(itemValue)}
-        >
-          {months.map((month) => (
-            <Picker.Item key={month} label={month} value={month} />
-          ))}
-        </Picker>
+        {(section === 0 || section === 1 )
+          && (
+            <Picker
+              selectedValue={selectedMonth}
+              style={styles.picker}
+              onValueChange={(itemValue) => setSelectedMonth(itemValue)}
+            >
+              {months.map((month) => (
+                <Picker.Item key={month} label={month} value={month} />
+              ))}
+            </Picker>
+          )}
         {section === 0 && (
           <View style={styles.section0View}>
             <BillPieChart data={pieChartData} />
@@ -184,6 +193,13 @@ const BillAnalysis = () => {
             </View>
           </View>
         )}
+        {section === 2 && (
+          <View
+            style={{ alignItems: "center", justifyContent: "center", flex: 1, paddingTop:20 }}
+          >
+            <BillLineChart data={lineChartData} />
+          </View>
+        )}
       </View>
       <View style={styles.footer}>
         <TouchableOpacity
@@ -213,6 +229,19 @@ const BillAnalysis = () => {
             size={50}
             color="#000"
           />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={
+            section === 2 ? styles.selectedFooter : styles.unselectedFooter
+          }
+          onPress={() => {
+            setSection(2);
+          }}
+        >
+          <Text style={{ fontWeight: "bold" }}> Year </Text>
+
+          <MaterialCommunityIcons name="chart-line" size={50} color="#000" />
         </TouchableOpacity>
       </View>
     </View>
@@ -262,14 +291,14 @@ const styles = StyleSheet.create({
   selectedFooter: {
     backgroundColor: COLORS.primary,
     padding: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 15,
     alignItems: "center",
   },
   unselectedFooter: {
     backgroundColor: COLORS.greyBackground,
     padding: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     borderRadius: 15,
     alignItems: "center",
   },
@@ -297,8 +326,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   totalAmountContainer: {
-    justifyContent:"center",
-    alignItems:"center",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: COLORS.plain,
     padding: 10,
     paddingHorizontal: 30,
@@ -312,9 +341,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     // Android elevation
     elevation: 5,
-    width:280,
+    width: 280,
   },
-  
+
   totalAmountText: {
     fontSize: 20,
     fontWeight: "bold",
@@ -323,7 +352,7 @@ const styles = StyleSheet.create({
   section1View: {
     flex: 1,
     width: "100%",
-    alignItems:"center",
+    alignItems: "center",
   },
   tableContainer: {
     marginTop: 20,
