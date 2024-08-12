@@ -19,7 +19,7 @@ export const COLORS = {
     },
   };
   
-  export const serverIPV4 = "192.168.0.10"; //Change according to environment
+  export const serverIPV4 = "192.168.68.107"; //Change according to environment
   //Alstonia : 192.168.68.107
   //Home : 192.168.0.10
   

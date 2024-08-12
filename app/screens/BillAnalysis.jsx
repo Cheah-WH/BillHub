@@ -27,12 +27,29 @@ const BillAnalysis = () => {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [pieChartData, setPieChartData] = useState([]);
-  const [totalPaymentAmount, setTotalPaymentAmount] = useState(0); // State for total payment amount
+  const [totalPaymentAmount, setTotalPaymentAmount] = useState(0); //Total for selected month
+  const [totalOfMonths, setTotalOfMonths] = useState({ //Total of each month 
+    labels: [],
+    values: [],
+  });
 
-  const lineChartData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun","July","Aug","Sep","Oct"],
-    values: [100, 200, 150, 300, 250, 400,500, 600,700,800,900],
-  };
+  useEffect(() => {
+    if (groupedHistory) {
+      const labels = [];
+      const values = [];
+
+      Object.keys(groupedHistory).forEach((monthYear) => {
+        labels.push(monthYear);
+        const totalPayment = groupedHistory[monthYear].reduce(
+          (sum, item) => sum + item.paymentAmount,
+          0
+        );
+        values.push(totalPayment);
+      });
+
+      setTotalOfMonths({ labels, values });
+    }
+  }, [groupedHistory]);
 
   const back = () => {
     navigation.goBack();
@@ -93,7 +110,6 @@ const BillAnalysis = () => {
 
   useEffect(() => {
     if (selectedMonth && groupedHistory[selectedMonth]) {
-      console.log("History of the month:", groupedHistory[selectedMonth]);
       const updatedPieChartData = groupedHistory[selectedMonth].map((item) => {
         const name = item.billId.nickname || item.billId.accountNumber;
         const amount = item.paymentAmount;
@@ -129,8 +145,15 @@ const BillAnalysis = () => {
         <View style={styles.headerRightView}></View>
       </View>
       <View style={styles.body}>
-        {(section === 0 || section === 1 )
-          && (
+        {(section === 0 || section === 1) && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "72%",
+            }}
+          >
             <Picker
               selectedValue={selectedMonth}
               style={styles.picker}
@@ -140,7 +163,30 @@ const BillAnalysis = () => {
                 <Picker.Item key={month} label={month} value={month} />
               ))}
             </Picker>
-          )}
+            <TouchableOpacity
+              style={
+                section === 1
+                  ? styles.selectedFooter2
+                  : styles.unselectedFooter2
+              }
+              onPress={() => {
+                if (section === 0) {
+                  setSection(1);
+                } else {
+                  setSection(0);
+                }
+              }}
+            >
+              <Text style={{ fontWeight: "bold", fontSize: 10 }}>Table</Text>
+
+              <MaterialCommunityIcons
+                name="file-table-outline"
+                size={25}
+                color="#000"
+              />
+            </TouchableOpacity>
+          </View>
+        )}
         {section === 0 && (
           <View style={styles.section0View}>
             <BillPieChart data={pieChartData} />
@@ -195,16 +241,23 @@ const BillAnalysis = () => {
         )}
         {section === 2 && (
           <View
-            style={{ alignItems: "center", justifyContent: "center", flex: 1, paddingTop:20 }}
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              flex: 1,
+              paddingTop: 20,
+            }}
           >
-            <BillLineChart data={lineChartData} />
+            <BillLineChart data={totalOfMonths} />
           </View>
         )}
       </View>
       <View style={styles.footer}>
         <TouchableOpacity
           style={
-            section === 0 ? styles.selectedFooter : styles.unselectedFooter
+            section === 0 || section === 1
+              ? styles.selectedFooter
+              : styles.unselectedFooter
           }
           onPress={() => {
             setSection(0);
@@ -212,23 +265,6 @@ const BillAnalysis = () => {
         >
           <Text style={{ fontWeight: "bold" }}> Month </Text>
           <MaterialCommunityIcons name="chart-pie" size={50} color="#000" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={
-            section === 1 ? styles.selectedFooter : styles.unselectedFooter
-          }
-          onPress={() => {
-            setSection(1);
-          }}
-        >
-          <Text style={{ fontWeight: "bold" }}>Table</Text>
-
-          <MaterialCommunityIcons
-            name="file-table-outline"
-            size={50}
-            color="#000"
-          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -291,16 +327,36 @@ const styles = StyleSheet.create({
   selectedFooter: {
     backgroundColor: COLORS.primary,
     padding: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     borderRadius: 15,
     alignItems: "center",
   },
   unselectedFooter: {
     backgroundColor: COLORS.greyBackground,
     padding: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     borderRadius: 15,
     alignItems: "center",
+  },
+  selectedFooter2: {
+    //For button
+    marginTop: 13,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    alignItems: "center",
+    height: 50,
+  },
+  unselectedFooter2: {
+    //For button
+    marginTop: 13,
+    backgroundColor: COLORS.greyBackground,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    alignItems: "center",
+    height: 50,
   },
   backIcon: {
     textShadowColor: "#000",
@@ -358,6 +414,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: "90%",
     alignSelf: "center",
+    marginBottom: 10,
   },
   table: {
     width: "100%",

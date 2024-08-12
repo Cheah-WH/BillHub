@@ -1,27 +1,64 @@
-import React from "react";
-import { View, Text, Dimensions, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Dimensions,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { COLORS } from "../constant";
 
 const screenWidth = Dimensions.get("window").width;
 
 const BillLineChart = ({ data }) => {
-  console.log("Data: ", data);
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    value: null,
+    index: null,
+  });
+
+  useEffect(() => {
+    console.log("Received data: ", data);
+  }, [data]);
+
+  // Shorten the labels
+  const shortenedLabels = data.labels.map((label) => {
+    const [month, year] = label.split(" ");
+    return month.slice(0, 3) + year.slice(-2);
+  });
+
+  // Handle data point click
+  const handleDataPointClick = (data) => {
+    const { x, y, value, index } = data;
+    setTooltip({
+      visible: true,
+      x,
+      y,
+      value,
+      index,
+    });
+  };
+
   return (
     <View style={styles.container}>
       {/* Line Chart */}
       <LineChart
         data={{
-          labels: data.labels, // e.g., ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+          labels: shortenedLabels,
           datasets: [
             {
-              data: data.values, // e.g., [100, 200, 150, 300, 250, 400]
-              strokeWidth: 2, // Optional
+              data: data.values,
+              strokeWidth: 2,
             },
           ],
         }}
-        width={screenWidth - 40} // Adjust the width to fit your design
+        width={screenWidth - 40}
         height={220}
+        fromZero={true}
         chartConfig={{
           backgroundColor: "#ffffff",
           backgroundGradientFrom: "#eff3ff",
@@ -36,12 +73,26 @@ const BillLineChart = ({ data }) => {
             strokeWidth: "2",
             stroke: "#ffa726",
           },
+          decimalPlaces: 0,
         }}
-        bezier // Optional, makes the line curve
         style={styles.chart}
+        onDataPointClick={handleDataPointClick}
       />
 
-      <View style={{height:25}}></View>
+      {tooltip.visible && (
+        <View
+          style={[
+            styles.tooltip,
+            { top: tooltip.y - 30, left: tooltip.x - 50 },
+          ]}
+        >
+          <Text style={styles.tooltipText}>
+            {`Value: RM ${tooltip.value.toFixed(2)}`}
+          </Text>
+        </View>
+      )}
+
+      <View style={{ height: 25 }}></View>
 
       {/* Table Header */}
       <View style={styles.tableHeaderContainer}>
@@ -54,7 +105,7 @@ const BillLineChart = ({ data }) => {
       {/* Scrollable Table */}
       <ScrollView style={styles.tableContainer}>
         <View style={styles.table}>
-          {data.labels.map((item, index) => (
+          {shortenedLabels.map((item, index) => (
             <View
               key={index}
               style={[
@@ -65,7 +116,14 @@ const BillLineChart = ({ data }) => {
               <View style={styles.tableCell}>
                 <Text style={styles.tableCell}>{item}</Text>
               </View>
-              <Text style={styles.tableCell}>
+              <Text
+                style={
+                  tooltip.value !== null &&
+                  data.values[index].toFixed(2) === tooltip.value.toFixed(2)
+                    ? styles.tableCellSelected
+                    : styles.tableCell
+                }
+              >
                 RM {data.values[index].toFixed(2)}
               </Text>
             </View>
@@ -88,17 +146,25 @@ const styles = StyleSheet.create({
     borderColor: "#000",
     borderWidth: 0.5,
   },
+  tooltip: {
+    position: "absolute",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    padding: 8,
+    borderRadius: 5,
+  },
+  tooltipText: {
+    color: "#fff",
+    fontSize: 14,
+  },
   tableHeaderContainer: {
     width: 320,
     alignSelf: "center",
   },
   tableContainer: {
-    marginTop: 0, 
+    marginTop: 0,
     width: 320,
     alignSelf: "center",
-    maxHeight: 200, 
-    borderBottomColor: COLORS.primary,
-    borderBottomWidth: 1,
+    maxHeight: 200,
   },
   table: {
     width: "100%",
@@ -109,6 +175,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  tableCellSelected: {
+    flex: 1,
+    padding: 5,
+    textAlign: "center",
+    fontSize: 16,
+    color: COLORS.primary,
   },
   tableCell: {
     flex: 1,
