@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,34 +7,102 @@ import {
   FlatList,
   Modal,
   StatusBar,
-  Switch
+  Switch,
+  Image,
+  Alert
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
+import AntDesign from "react-native-vector-icons/AntDesign";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useAuth } from "../../backend/AuthContext";
+import axios from "axios";
 
 const BillReminder = () => {
+  const { bills, setBills, user } = useAuth();
   const navigation = useNavigation();
+  const [selectedBill, setSelectedBill] = useState("All bills are selected");
+
+  // Bills are fetched again to retrieve the changes after updating
+  const fetchBills = async (userId) => {
+    try {
+      const response = await axios.get(
+        `http://${serverIPV4}:3000/bills/${userId}`
+      );
+      if (response.status === 200) {
+        const billsData = response.data;
+        const billsWithCompanyData = await Promise.all(
+          billsData.map(async (bill) => {
+            const companyResponse = await axios.get(
+              `http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`
+            );
+            return {
+              ...bill,
+              company: companyResponse.data,
+            };
+          })
+        );
+        //The retrieve bills are set to the AuthContext to keep all pages updated
+        setBills(billsWithCompanyData);
+      } else {
+        Alert.alert("Error", "Failed to retrieve bills");
+      }
+    } catch (error) {
+      console.error("Failed to retrieve bills", error);
+      Alert.alert("Error", "An error occurred while retrieving bills");
+    }
+  };
+
+  // Data to be set to bill reminder
+  const [selectedBillId, setSelectedBillId] = useState("");
   const [isReminderOn, setIsReminderOn] = useState(false);
-  const [reminderMethod, setReminderMethod] = useState("Email");
+  const [reminderMethod, setReminderMethod] = useState({
+    email: false,
+    notification: false,
+    sms: false,
+  });
   const [reminderTimings, setReminderTimings] = useState({
     onBillRelease: true,
     dayBeforeDeadline: false,
-    rightBeforeOverdue: false,
   });
-  const [bills, setBills] = useState([
-    { id: 0, name: "All bills are selected" },
-    { id: 1, name: "Electricity Bill" },
-    { id: 2, name: "Water Bill" },
-    { id: 3, name: "Internet Bill" },
-    { id: 4, name: "Testing 4 " },
-    { id: 5, name: "Testing 5555555555 Bill" },
-    { id: 6, name: "6" },
-  ]);
-  const [selectedBill, setSelectedBill] = useState("All bills are selected");
+
+  // Function to send reminder data to the backend
+  const saveReminderSettings = async () => {
+    try {
+      // Construct the reminder data object
+      const reminderData = {
+        onOff: isReminderOn,
+        method: reminderMethod,
+        time: reminderTimings,
+      };
+
+      // Send the PUT request to update the bill reminder
+      console.log("Calling backend API with data passing: ", reminderData);
+      const response = await axios.put(
+        `http://${serverIPV4}:3000/bills/${selectedBillId}/reminder`,
+        {
+          Reminder: reminderData,
+        }
+      );
+
+      console.log("Bill reminder updated");
+      Alert.alert("The bill reminder is updated !");
+      fetchBills(user._id);
+    } catch (error) {
+      console.error("Error updating bill reminder:", error);
+    }
+  };
+
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  useEffect(() => {
+    console.log(
+      "The selected bill is: ",
+      selectedBill,
+      " ID :",
+      selectedBillId
+    );
+  }, [selectedBill]);
 
   const back = () => {
     navigation.goBack();
@@ -44,6 +112,13 @@ const BillReminder = () => {
     setIsReminderOn((previousState) => !previousState);
   };
 
+  const toggleReminderMethod = (method) => {
+    setReminderMethod((prevState) => ({
+      ...prevState,
+      [method.toLowerCase()]: !prevState[method.toLowerCase()],
+    }));
+  };
+
   const toggleTiming = (timing) => {
     setReminderTimings((prevState) => ({
       ...prevState,
@@ -51,10 +126,38 @@ const BillReminder = () => {
     }));
   };
 
-  const selectBill = (billName) => {
+  const selectBill = (billName, billId) => {
     setSelectedBill(billName);
+    setSelectedBillId(billId);
     setIsModalVisible(false);
   };
+
+  console.log("Bills:", bills);
+
+  useEffect(() => {
+    // Find the selected bill in the bills array
+    const thisSelectedBill = bills.find((bill) => bill._id === selectedBillId);
+  
+    // If the selected bill has a Reminder object, update the state accordingly
+    if (thisSelectedBill && thisSelectedBill.Reminder) {
+      setIsReminderOn(thisSelectedBill.Reminder.onOff);
+      setReminderMethod(thisSelectedBill.Reminder.method);
+      setReminderTimings(thisSelectedBill.Reminder.time);
+    } else {
+      // If there's no Reminder object, set default values
+      setIsReminderOn(false);
+      setReminderMethod({
+        email: false,
+        notification: false,
+        sms: false,
+      });
+      setReminderTimings({
+        onBillRelease: true,
+        dayBeforeDeadline: false,
+      });
+    }
+  }, [selectedBillId]);
+  
 
   return (
     <View style={styles.screenView}>
@@ -108,16 +211,18 @@ const BillReminder = () => {
                 key={method}
                 style={[
                   styles.reminderMethodButton,
-                  reminderMethod === method &&
-                    styles.reminderMethodButtonSelected,
+                  reminderMethod[method.toLowerCase()]
+                    ? styles.reminderMethodButtonSelected
+                    : styles.reminderMethodButtonUnselected,
                 ]}
-                onPress={() => setReminderMethod(method)}
+                onPress={() => toggleReminderMethod(method)}
               >
                 <Text
                   style={[
                     styles.reminderMethodText,
-                    reminderMethod === method &&
-                      styles.reminderMethodTextSelected,
+                    reminderMethod[method.toLowerCase()]
+                      ? styles.reminderMethodTextSelected
+                      : styles.reminderMethodTextUnselected,
                   ]}
                 >
                   {method}
@@ -158,7 +263,10 @@ const BillReminder = () => {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton}>
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={saveReminderSettings}
+        >
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
@@ -179,17 +287,21 @@ const BillReminder = () => {
           activeOpacity={1} // Ensures the overlay captures the touch event
           onPress={() => setIsModalVisible(false)} // Closes the modal when the overlay is pressed
         >
-          <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
+          <View
+            style={styles.modalContainer}
+            onStartShouldSetResponder={() => true}
+          >
             <Text style={styles.modalTitle}>Select Bill</Text>
             <FlatList
               data={bills}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.modalItem}
-                  onPress={() => selectBill(item.name)}
+                  onPress={() => selectBill(item.nickname, item._id)}
                 >
-                  <Text style={styles.modalItemText}>{item.name}</Text>
+                  <Image source={{ uri: item.company.ImageURL }} style={styles.image} />
+                  <Text style={styles.modalItemText}>{item.nickname}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -280,17 +392,26 @@ const styles = StyleSheet.create({
   },
   reminderMethodButton: {
     padding: 10,
-    backgroundColor: "#f4f4f4",
     borderRadius: 5,
   },
   reminderMethodButtonSelected: {
     backgroundColor: COLORS.primary,
+    borderColor:"#000",
+    borderWidth:0.5,
+  },
+  reminderMethodButtonUnselected: {
+    backgroundColor: COLORS.plain,
+    borderColor:"#000",
+    borderWidth:0.5,
   },
   reminderMethodText: {
-    color: "#000",
+    fontSize: 16,
   },
   reminderMethodTextSelected: {
     color: "#fff",
+  },
+  reminderMethodTextUnselected: {
+    color: "#000",
   },
   reminderTimingContainer: {
     flexDirection: "column",
@@ -310,10 +431,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 60,
     borderRadius: 25,
     alignItems: "center",
-    marginBottom:15,
+    marginBottom: 15,
   },
   saveButtonText: {
-    color: "#fff",
+    color: "#000",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -324,11 +445,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    width: "80%",
+    width: "75%",
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
     alignItems: "center",
+    height:500,
   },
   modalTitle: {
     fontSize: 20,
@@ -336,6 +458,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   modalItem: {
+    flexDirection:"row",
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
@@ -354,6 +477,12 @@ const styles = StyleSheet.create({
   modalCloseButtonText: {
     color: "#fff",
     fontSize: 16,
+  },
+  image: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+    resizeMode: "contain",
   },
 });
 

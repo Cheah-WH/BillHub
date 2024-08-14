@@ -122,6 +122,36 @@ const BillSchema = new Schema({
     type: String,
     default: "Pending",
   },
+  Reminder: {
+    onOff: {
+      type: Boolean,
+      default: false,
+    },
+    method: {
+      email: {
+        type: Boolean,
+        default: false,
+      },
+      notification: {
+        type: Boolean,
+        default: false,
+      },
+      sms: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    time: {
+      onBillRelease: {
+        type: Boolean,
+        default: true,
+      },
+      dayBeforeDeadline: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  },
 });
 
 const PaymentHistorySchema = new Schema(
@@ -481,6 +511,39 @@ app.get("/paymentHistory2/:billId", async (req, res) => {
   } catch (error) {
     console.error("Error retrieving payment histories:", error);
     res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Update Bill Reminder
+app.put("/bills/:id/reminder", async (req, res) => {
+  console.log("Backend updating bill reminder...");
+  try {
+    // Extract reminder data from the request body
+    const { onOff, method, time } = req.body.Reminder;
+
+    // Update the bill with the new reminder information
+    console.log("Bill ID to be update: ", req.params.id);
+    const updatedBill = await Bill.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          "Reminder.onOff": onOff,
+          "Reminder.method": method,
+          "Reminder.time": time,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedBill) {
+      return res.status(404).send("Bill not found");
+    }
+
+    res.json(updatedBill);
+    console.log("Bill Reminder updated at backend")
+  } catch (err) {
+    console.error("Failed to update bill reminder", err);
+    res.status(500).send("An error occurred while updating the bill reminder");
   }
 });
 
