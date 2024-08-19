@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { COLORS } from "../constant";
+import { COLORS } from "../../constant";
 
 const screenWidth = Dimensions.get("window").width;
 

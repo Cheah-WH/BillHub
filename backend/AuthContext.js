@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 import { Alert } from "react-native";
 import { storeUserData, getUserData, removeUserData } from "./storage";
 import axios from "axios";
@@ -13,6 +13,7 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const loadUser = async () => {
+      console.log("LoadUser is running from AuthContext");
       const { token, user } = await getUserData();
       if (token && user) {
         await fetchUserData(user._id); //Fetch Latest state of user data from MongoDB
@@ -34,7 +35,7 @@ const AuthProvider = ({ children }) => {
   const logout = async () => {
     setUser(null);
     await removeUserData();
-    console.log("Removing user data from AsyncStorage...");
+    console.log("Removing user data from AuthContext...");
   };
   
   const fetchUserData = async (userId) => {
@@ -53,18 +54,15 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchBills = async (userId) => {
+  const fetchBills = useCallback(async (userId) => {
+    console.log("Fetching bills in AuthContext");
     try {
-      const response = await axios.get(
-        `http://${serverIPV4}:3000/bills/${userId}`
-      );
+      const response = await axios.get(`http://${serverIPV4}:3000/bills/${userId}`);
       if (response.status === 200) {
         const billsData = response.data;
         const billsWithCompanyData = await Promise.all(
           billsData.map(async (bill) => {
-            const companyResponse = await axios.get(
-              `http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`
-            );
+            const companyResponse = await axios.get(`http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`);
             return {
               ...bill,
               company: companyResponse.data,
@@ -79,10 +77,10 @@ const AuthProvider = ({ children }) => {
       console.error("Failed to retrieve bills", error);
       Alert.alert("Error", "An error occurred while retrieving bills");
     }
-  };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, authLoading, bills, setBills }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, authLoading, bills, setBills, fetchBills }}>
       {children}
     </AuthContext.Provider>
   );

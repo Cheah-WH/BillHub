@@ -14,8 +14,8 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
 import { Picker } from "@react-native-picker/picker";
-import BillPieChart from "../components/BillPieChart";
-import BillLineChart from "../components/BillLineChart";
+import BillPieChart from "../components/BillAnalysis/BillPieChart";
+import BillLineChart from "../components/BillAnalysis/BillLineChart";
 
 const BillAnalysis = () => {
   const navigation = useNavigation();

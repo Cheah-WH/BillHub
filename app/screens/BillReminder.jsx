@@ -9,7 +9,7 @@ import {
   StatusBar,
   Switch,
   Image,
-  Alert
+  Alert,
 } from "react-native";
 import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
@@ -21,9 +21,23 @@ import axios from "axios";
 const BillReminder = () => {
   const { bills, setBills, user } = useAuth();
   const navigation = useNavigation();
-  const [selectedBill, setSelectedBill] = useState("All bills are selected");
+  const [selectedBill, setSelectedBill] = useState("All Bills");
+  const [billsList, setBillsList] = useState([
+    {
+      nickname: "All Bills",
+      _id: "0",
+      company: {
+        ImageURL:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIN7Nhg0tqJWQs7Ar8HFo3nA41l2kia6wiVA&s",
+      },
+    },
+    ...bills,
+  ]);
 
   // Bills are fetched again to retrieve the changes after updating
+  // This fetchBills is different from AuthContext 
+  // This fetchBills will update BillsList which include "All Bills"
+  // This fetchBills will trigger Agenda to set reminder
   const fetchBills = async (userId) => {
     try {
       const response = await axios.get(
@@ -44,6 +58,27 @@ const BillReminder = () => {
         );
         //The retrieve bills are set to the AuthContext to keep all pages updated
         setBills(billsWithCompanyData);
+        setBillsList([
+          {
+            nickname: "All Bills",
+            _id: "0",
+            company: {
+              ImageURL:
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIN7Nhg0tqJWQs7Ar8HFo3nA41l2kia6wiVA&s",
+            },
+          },
+          ...billsWithCompanyData,
+        ]);
+
+        // call endpoint to schedule reminders
+        try{
+          await axios.post(`http://${serverIPV4}:3000/schedule-reminders`, {
+            user: user,
+            bills: billsWithCompanyData,
+          });
+        } catch (error){
+          console.log("Error calling API of schedule reminders: ",error)
+        }
       } else {
         Alert.alert("Error", "Failed to retrieve bills");
       }
@@ -62,7 +97,7 @@ const BillReminder = () => {
     sms: false,
   });
   const [reminderTimings, setReminderTimings] = useState({
-    onBillRelease: true,
+    onBillRelease: false,
     dayBeforeDeadline: false,
   });
 
@@ -78,14 +113,21 @@ const BillReminder = () => {
 
       // Send the PUT request to update the bill reminder
       console.log("Calling backend API with data passing: ", reminderData);
-      const response = await axios.put(
-        `http://${serverIPV4}:3000/bills/${selectedBillId}/reminder`,
-        {
-          Reminder: reminderData,
-        }
-      );
-
-      console.log("Bill reminder updated");
+      if (selectedBill == "All Bills") {
+        const response = await axios.put(
+          `http://${serverIPV4}:3000/bills/reminder/${user._id}`,
+          {
+            Reminder: reminderData,
+          }
+        );
+      } else {
+        const response = await axios.put(
+          `http://${serverIPV4}:3000/bills/${selectedBillId}/reminder`,
+          {
+            Reminder: reminderData,
+          }
+        );
+      }
       Alert.alert("The bill reminder is updated !");
       fetchBills(user._id);
     } catch (error) {
@@ -103,6 +145,12 @@ const BillReminder = () => {
       selectedBillId
     );
   }, [selectedBill]);
+
+  useEffect(() => {
+    if (selectedBillId == 0) {
+      Alert.alert(`Reminder setting for "ALL BILLS" will not be shown as some bill may have customized setting`);
+    }
+  }, [selectedBillId]);
 
   const back = () => {
     navigation.goBack();
@@ -137,14 +185,14 @@ const BillReminder = () => {
   useEffect(() => {
     // Find the selected bill in the bills array
     const thisSelectedBill = bills.find((bill) => bill._id === selectedBillId);
-  
+
     // If the selected bill has a Reminder object, update the state accordingly
     if (thisSelectedBill && thisSelectedBill.Reminder) {
       setIsReminderOn(thisSelectedBill.Reminder.onOff);
       setReminderMethod(thisSelectedBill.Reminder.method);
       setReminderTimings(thisSelectedBill.Reminder.time);
     } else {
-      // If there's no Reminder object, set default values
+      // If there's no Reminder object, set default values, same for ALL BILLS
       setIsReminderOn(false);
       setReminderMethod({
         email: false,
@@ -152,12 +200,11 @@ const BillReminder = () => {
         sms: false,
       });
       setReminderTimings({
-        onBillRelease: true,
+        onBillRelease: false,
         dayBeforeDeadline: false,
       });
     }
   }, [selectedBillId]);
-  
 
   return (
     <View style={styles.screenView}>
@@ -293,14 +340,17 @@ const BillReminder = () => {
           >
             <Text style={styles.modalTitle}>Select Bill</Text>
             <FlatList
-              data={bills}
+              data={billsList}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.modalItem}
                   onPress={() => selectBill(item.nickname, item._id)}
                 >
-                  <Image source={{ uri: item.company.ImageURL }} style={styles.image} />
+                  <Image
+                    source={{ uri: item.company.ImageURL }}
+                    style={styles.image}
+                  />
                   <Text style={styles.modalItemText}>{item.nickname}</Text>
                 </TouchableOpacity>
               )}
@@ -396,13 +446,13 @@ const styles = StyleSheet.create({
   },
   reminderMethodButtonSelected: {
     backgroundColor: COLORS.primary,
-    borderColor:"#000",
-    borderWidth:0.5,
+    borderColor: "#000",
+    borderWidth: 0.5,
   },
   reminderMethodButtonUnselected: {
     backgroundColor: COLORS.plain,
-    borderColor:"#000",
-    borderWidth:0.5,
+    borderColor: "#000",
+    borderWidth: 0.5,
   },
   reminderMethodText: {
     fontSize: 16,
@@ -450,7 +500,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     alignItems: "center",
-    height:500,
+    height: 500,
   },
   modalTitle: {
     fontSize: 20,
@@ -458,7 +508,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   modalItem: {
-    flexDirection:"row",
+    flexDirection: "row",
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",

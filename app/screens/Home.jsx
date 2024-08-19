@@ -9,8 +9,8 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { COLORS, FONTS, serverIPV4 } from "../constant";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { COLORS, FONTS } from "../constant";
+import { useNavigation, useFocusEffect, useIsFocused } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../../backend/AuthContext";
@@ -18,49 +18,18 @@ import BillItem from "../components/BillItem";
 import axios from "axios";
 
 const HomeScreen = () => {
-  const { bills, setBills, user, setUser } = useAuth();
+  const { bills, user, setUser, fetchBills } = useAuth();
   const navigation = useNavigation();
   const [credit, setCredit] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-
+  const isFocused = useIsFocused(); // Hook to get focus status
+  
   useEffect(() => {
     console.log("user:", user);
     if (user && user.credit !== undefined) {
       setCredit(user.credit);
     }
   }, [user]);
-
-  const fetchBills = useCallback(async () => {
-    try {
-      // Fetch the bills for the logged-in user
-      const response = await axios.get(
-        `http://${serverIPV4}:3000/bills/${user._id}`
-      );
-      if (response.status === 200) {
-        const billsData = response.data;
-
-        // Fetch the billing company data for each bill
-        const billsWithCompanyData = await Promise.all(
-          billsData.map(async (bill) => {
-            const companyResponse = await axios.get(
-              `http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`
-            );
-            return {
-              ...bill,
-              company: companyResponse.data,
-            };
-          })
-        );
-
-        setBills(billsWithCompanyData);
-      } else {
-        Alert.alert("Error", "Failed to retrieve bills");
-      }
-    } catch (error) {
-      console.error("Failed to retrieve bills", error);
-      Alert.alert("Error", "An error occurred while retrieving bills");
-    }
-  }, [user._id, setBills]);
 
   const updateCredit = async (amount) => {
     try {
@@ -75,15 +44,11 @@ const HomeScreen = () => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchBills();
-    }, [fetchBills])
-  );
-
   useEffect(() => {
-    //console.log("Bills Retrieved: ", bills);
-  }, [bills]);
+    if (isFocused && user && user._id) {
+      fetchBills(user._id);
+    }
+  }, [isFocused]);
 
   const openDrawer = () => {
     navigation.openDrawer();
@@ -94,7 +59,7 @@ const HomeScreen = () => {
     try {
       const updatedUser = await updateCredit(parseFloat(100));
       setUser(updatedUser);
-      Alert.alert("Success", "Credit reload successfully");
+      Alert.alert("Success", "Credit reloaded successfully");
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
@@ -102,11 +67,17 @@ const HomeScreen = () => {
     }
   };
 
-  const onRefresh = useCallback(async () => {
+  // Pull To Refresh Bills
+  const onRefresh = async () => {
     setRefreshing(true);
-    await fetchBills();
+    try {
+      await fetchBills(user._id); // Use fetchBills from AuthContext
+    } catch (error) {
+      console.error("Failed to refresh bills", error);
+      Alert.alert("Error", "An error occurred while refreshing bills");
+    }
     setRefreshing(false);
-  }, [fetchBills]);
+  };
 
   return (
     <View style={styles.screenView}>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet,Alert } from "react-native";
-import { COLORS, FONTS,serverIPV4 } from "../constant";
+import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import BillInfo from "../components/BillInfo";
@@ -32,13 +32,16 @@ const BillDetail = ({ route }) => {
 
   const handleDelete = () => {
     deleteBill(bill._id);
-    setDeleteModalVisible(false); 
-    Alert.alert("The selected bill is succesfully deleted");
+    setDeleteModalVisible(false);
+    Alert.alert("The selected bill is successfully deleted");
     navigation.navigate("Home");
   };
 
   return (
-    <View style={styles.screenView}>
+    <KeyboardAvoidingView
+      style={styles.screenView}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <View style={styles.header}>
         <View style={styles.headerLeftView}>
           <AntDesignIcon
@@ -50,7 +53,7 @@ const BillDetail = ({ route }) => {
           />
         </View>
         <View style={styles.headerMidView}>
-          <Text style={styles.title}> Bill Detail </Text>
+          <Text style={styles.title}>Bill Detail</Text>
         </View>
         <View style={styles.headerRightView}>
           <AntDesignIcon
@@ -58,9 +61,7 @@ const BillDetail = ({ route }) => {
             name="delete"
             size={28}
             color="#000"
-            onPress={() => {
-              setDeleteModalVisible(true);
-            }} 
+            onPress={() => setDeleteModalVisible(true)}
           />
         </View>
       </View>
@@ -69,11 +70,11 @@ const BillDetail = ({ route }) => {
       </View>
       <ConfirmationModal
         visible={deleteModalVisible}
-        onClose={()=>{setDeleteModalVisible(false)}}
+        onClose={() => setDeleteModalVisible(false)}
         onConfirm={handleDelete}
         message="Are you sure you want to delete this bill?"
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -87,8 +88,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     flexDirection: "row",
     backgroundColor: COLORS.primary,
-    flex: 1,
     alignItems: "center",
+    height: 42,
   },
   headerLeftView: {
     justifyContent: "center",
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   body: {
     paddingVertical: 25,
     paddingHorizontal: 20,
-    flex: 13,
+    flex: 1,
     backgroundColor: COLORS.greyBackground,
   },
   footer: {

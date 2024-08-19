@@ -5,16 +5,15 @@ const bcrypt = require("bcryptjs"); // Use bcryptjs instead of bcrypt
 const jwt = require("jsonwebtoken");
 const app = express();
 const port = 3000;
-const nodemailer = require("nodemailer");
+const { scheduleReminder, agenda } = require("./Agenda");
 
-// Sending Email
-const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  auth: {
-    user: "cheahwh3@gmail.com", // Your Gmail address
-    pass: "ihsh louk iovh aysl", // Your Gmail password or application-specific password
-  },
-});
+const { sendEmail } = require("./emailService");
+
+// Import Models
+const Bill = require("./models/models/Bill");
+const BillingCompany = require("./models/models/BillingCompany");
+const PaymentHistory = require("./models/models/PaymentHistory");
+const User = require("./models/models/User");
 
 // Middleware
 app.use(express.json());
@@ -24,23 +23,10 @@ app.use(cors());
 app.post("/send-email", async (req, res) => {
   const { to, subject, text, html } = req.body;
 
-  // Email options
-  const mailOptions = {
-    from: "cheahwh3@gmail.com",
-    to,
-    subject,
-    text,
-    html,
-  };
-
-  // Send email
   try {
-    console.log("Sending email to:", to);
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
+    await sendEmail({ to, subject, text, html });
     res.status(200).send("Email sent successfully");
   } catch (error) {
-    //console.error("Error sending email:", error.message);
     res.status(500).send("Failed to send email: " + error.message);
   }
 });
@@ -56,153 +42,6 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
   console.log("Connected to MongoDB");
 });
-
-// Schemas
-const Schema = mongoose.Schema;
-const BillingCompanySchema = new Schema({
-  name: { type: String, required: true },
-  imageURL: { type: String, required: true },
-  category: { type: String, required: true },
-});
-
-const UserSchema = new Schema({
-  name: { type: String, required: true },
-  idNumber: { type: String, required: true },
-  phoneNumber: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  credit: { type: Number, default: 0 },
-  bills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bill" }],
-});
-
-const BillSchema = new Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  billingCompanyId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "BillingCompany",
-    required: true,
-  },
-  accountNumber: {
-    type: String,
-    required: true,
-  },
-  nickname: {
-    type: String,
-    required: true,
-  },
-  phoneNumber: {
-    type: String,
-    default: null,
-  },
-  billingDate: {
-    type: Date,
-    default: null,
-  },
-  dueDate: {
-    type: Date,
-    default: null,
-  },
-  outStandingAmount: {
-    type: Number,
-    default: null,
-  },
-  overdueAmount: {
-    type: Number,
-    default: null,
-  },
-  billOwner: {
-    type: String,
-    default: null,
-  },
-  status: {
-    type: String,
-    default: "Pending",
-  },
-  Reminder: {
-    onOff: {
-      type: Boolean,
-      default: false,
-    },
-    method: {
-      email: {
-        type: Boolean,
-        default: false,
-      },
-      notification: {
-        type: Boolean,
-        default: false,
-      },
-      sms: {
-        type: Boolean,
-        default: false,
-      },
-    },
-    time: {
-      onBillRelease: {
-        type: Boolean,
-        default: true,
-      },
-      dayBeforeDeadline: {
-        type: Boolean,
-        default: false,
-      },
-    },
-  },
-});
-
-const PaymentHistorySchema = new Schema(
-  {
-    transactionId: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    billId: {
-      type: Schema.Types.ObjectId,
-      ref: "Bill",
-      required: true,
-    },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    billingCompanyId: {
-      type: Schema.Types.ObjectId,
-      ref: "BillingCompany",
-      required: true,
-    },
-    paymentDate: {
-      type: Date,
-      required: true,
-    },
-    paymentAmount: {
-      type: Number,
-      required: true,
-    },
-    paymentMethod: {
-      type: String,
-      enum: ["BillHub Credit", "Debit Card", "Online Banking"],
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["Pending", "Completed", "Failed"],
-      default: "Pending",
-    },
-  },
-  { timestamps: true }
-);
-
-// Models
-const BillingCompany = mongoose.model("BillingCompany", BillingCompanySchema);
-const User = mongoose.model("User", UserSchema);
-const Bill = mongoose.model("Bill", BillSchema);
-const PaymentHistory = mongoose.model("PaymentHistory", PaymentHistorySchema);
 
 // API Endpoints
 // Get Billing Companies List
@@ -514,7 +353,7 @@ app.get("/paymentHistory2/:billId", async (req, res) => {
   }
 });
 
-// Update Bill Reminder
+// Update Bill Reminder by BillId
 app.put("/bills/:id/reminder", async (req, res) => {
   console.log("Backend updating bill reminder...");
   try {
@@ -540,10 +379,55 @@ app.put("/bills/:id/reminder", async (req, res) => {
     }
 
     res.json(updatedBill);
-    console.log("Bill Reminder updated at backend")
+    console.log("Bill Reminder updated at backend");
   } catch (err) {
     console.error("Failed to update bill reminder", err);
     res.status(500).send("An error occurred while updating the bill reminder");
+  }
+});
+
+// Update Bill Reminders for All Bills of a User
+app.put("/bills/reminder/:userId", async (req, res) => {
+  console.log("Backend updating reminders for all bills of a user...");
+  try {
+    // Extract reminder data from the request body
+    const { onOff, method, time } = req.body.Reminder;
+
+    // Find and update all bills associated with the provided userId
+    console.log("User ID to update reminders for: ", req.params.userId);
+    const updatedBills = await Bill.updateMany(
+      { userId: req.params.userId },
+      {
+        $set: {
+          "Reminder.onOff": onOff,
+          "Reminder.method": method,
+          "Reminder.time": time,
+        },
+      },
+      { new: true }
+    );
+
+    if (updatedBills.matchedCount === 0) {
+      return res.status(404).send("No bills found for this user");
+    }
+
+    res.json({ message: "Bill reminders updated successfully", updatedBills });
+    console.log("Reminders updated for all bills of the user");
+  } catch (err) {
+    console.error("Failed to update bill reminders", err);
+    res.status(500).send("An error occurred while updating bill reminders");
+  }
+});
+
+// Trigger job scheduling for reminders
+app.post("/schedule-reminders", async (req, res) => {
+  const { user, bills } = req.body;
+  console.log("Bills received from Frontend: ", bills);
+  console.log("User received from Frontend: ",user);
+  try {
+    //await scheduleReminder();
+  } catch (err) {
+    console.log("Error scheduling reminders: ", err);
   }
 });
 

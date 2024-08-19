@@ -21,11 +21,11 @@ import Feather from "react-native-vector-icons/Feather";
 import { AuthContext } from "../../backend/AuthContext";
 
 const images = [
-  { id: 1, uri: require("../images/login1.png") },
-  { id: 2, uri: require("../images/login2.png") },
-  { id: 3, uri: require("../images/login3.png") },
-  { id: 4, uri: require("../images/login4.jpg") },
-  { id: 5, uri: require("../images/login5.jpg") },
+  { id: 1, uri: require("../images/Login/login1.png") },
+  { id: 2, uri: require("../images/Login/login2.png") },
+  { id: 3, uri: require("../images/Login/login3.png") },
+  { id: 4, uri: require("../images/Login/login4.png") },
+  { id: 5, uri: require("../images/Login/login5.png") },
 ];
 
 const Login = () => {
@@ -46,9 +46,9 @@ const Login = () => {
 
   useFocusEffect(
     React.useCallback(() => {
+      console.log("Login Out...");
       setSection(0);
       logout();
-      console.log("Login Out...");
     }, [])
   );
 
