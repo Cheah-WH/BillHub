@@ -48,7 +48,7 @@ const BillReminder = () => {
         const billsWithCompanyData = await Promise.all(
           billsData.map(async (bill) => {
             const companyResponse = await axios.get(
-              `http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`
+              `http://${serverIPV4}:3000/billing-companies/${bill.billingCompanyId}`
             );
             return {
               ...bill,
@@ -114,14 +114,14 @@ const BillReminder = () => {
       // Send the PUT request to update the bill reminder
       console.log("Calling backend API with data passing: ", reminderData);
       if (selectedBill == "All Bills") {
-        const response = await axios.put(
+        const response = await axios.patch(
           `http://${serverIPV4}:3000/bills/reminder/${user._id}`,
           {
             Reminder: reminderData,
           }
         );
       } else {
-        const response = await axios.put(
+        const response = await axios.patch(
           `http://${serverIPV4}:3000/bills/${selectedBillId}/reminder`,
           {
             Reminder: reminderData,

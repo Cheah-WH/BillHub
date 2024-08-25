@@ -104,7 +104,7 @@ const BillInfo = ({ bill }) => {
 
   const saveNickname = async () => {
     try {
-      const response = await axios.put(
+      const response = await axios.patch(
         `http://${serverIPV4}:3000/bills/${_id}/nickname`,
         {
           id: _id,
@@ -271,6 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     paddingHorizontal: 80,
     paddingVertical: 15,
+
   },
   saveText: {
     color: "#000",
@@ -279,6 +280,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
+    height:530,
     backgroundColor: COLORS.background,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

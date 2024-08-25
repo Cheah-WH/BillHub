@@ -62,7 +62,7 @@ const AuthProvider = ({ children }) => {
         const billsData = response.data;
         const billsWithCompanyData = await Promise.all(
           billsData.map(async (bill) => {
-            const companyResponse = await axios.get(`http://${serverIPV4}:3000/billingcompanies/${bill.billingCompanyId}`);
+            const companyResponse = await axios.get(`http://${serverIPV4}:3000/billing-companies/${bill.billingCompanyId}`);
             return {
               ...bill,
               company: companyResponse.data,

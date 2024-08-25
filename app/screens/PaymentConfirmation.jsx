@@ -44,7 +44,7 @@ const PaymentConfirmation = ({ route }) => {
       }));
 
       const response = await axios.post(
-        `http://${serverIPV4}:3000/savePaymentHistory`,
+        `http://${serverIPV4}:3000/payment-history`,
         paymentHistories,
         {
           headers: {

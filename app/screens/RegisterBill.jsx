@@ -142,7 +142,7 @@ const RegisterBill = ({ route }) => {
 
     try {
       const response = await axios.post(
-        `http://${serverIPV4}:3000/registerBill`,
+        `http://${serverIPV4}:3000/bills`,
         newBill
       );
       if (response.status === 201) {
@@ -257,7 +257,7 @@ const RegisterBill = ({ route }) => {
                         source={{ uri: item.ImageURL }}
                         style={styles.image}
                       />
-                      <Text style={{ color: "black", fontSize: 14 }}>
+                      <Text style={{ color: "black", fontSize: 15, fontWeight:"bold" }}>
                         {item.Name}
                       </Text>
                     </View>
@@ -508,16 +508,16 @@ const styles = StyleSheet.create({
   },
   bill: {
     flexDirection: "row",
-    marginHorizontal: 30,
-    marginVertical: 10,
+    marginHorizontal: 25,
+    marginVertical: 5,
     alignItems: "center",
-    padding: 10,
+    padding: 15,
     borderRadius: 20,
     backgroundColor: COLORS.greyBackground,
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 55,
+    height: 55,
     marginRight: 15,
     resizeMode: "contain",
   },

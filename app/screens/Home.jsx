@@ -9,8 +9,12 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
-import { useNavigation, useFocusEffect, useIsFocused } from "@react-navigation/native";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
+import {
+  useNavigation,
+  useFocusEffect,
+  useIsFocused,
+} from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../../backend/AuthContext";
@@ -22,8 +26,9 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const [credit, setCredit] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const isFocused = useIsFocused(); // Hook to get focus status
-  
+
   useEffect(() => {
     console.log("user:", user);
     if (user && user.credit !== undefined) {
@@ -33,7 +38,7 @@ const HomeScreen = () => {
 
   const updateCredit = async (amount) => {
     try {
-      const response = await axios.put(
+      const response = await axios.patch(
         `http://${serverIPV4}:3000/users/${user._id}/credit`,
         { amount }
       );
@@ -79,6 +84,30 @@ const HomeScreen = () => {
     setRefreshing(false);
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get(
+        `http://${serverIPV4}:3000/notifications/${user._id}`
+      );
+      if (response.data.length === 0) {
+        setNotificationCount(0);
+      } else {
+        const unseenCount = response.data.reduce((count, notification) => {
+          return notification.seen === false ? count + 1 : count;
+        }, 0);
+        setNotificationCount(unseenCount);
+      }
+    } catch (err) {
+      console.log("Error loading notification count: ", err);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchNotifications();
+    }, [])
+  );
+
   return (
     <View style={styles.screenView}>
       <View style={styles.header}>
@@ -106,6 +135,11 @@ const HomeScreen = () => {
               size={28}
               color="#000"
             />
+            {notificationCount > 0 && (
+              <View style={styles.notificationCountView}>
+                <Text>{notificationCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -298,6 +332,17 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 1,
   },
+  notificationCountView: {
+    flex: 1,
+    jusitifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    height: 18,
+    width: 17,
+    marginLeft: 18,
+    backgroundColor: COLORS.background,
+    borderRadius: 50,
+  },
   creditView: {
     alignItems: "center",
     justifyContent: "space-around",
@@ -331,7 +376,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: 3, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,

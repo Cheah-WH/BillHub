@@ -7,7 +7,7 @@ const api = axios.create({
 
 export const getBillingCompanies = async () => {
   try {
-    const response = await api.get("/billingcompanies");
+    const response = await api.get("/billing-companies");
     console.log("API.js Run /billingcompanies");
     return response.data;
   } catch (error) {

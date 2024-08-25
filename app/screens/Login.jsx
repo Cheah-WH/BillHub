@@ -59,7 +59,7 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post(`http://${serverIPV4}:3000/login`, {
+      const response = await axios.post(`http://${serverIPV4}:3000/users/login`, {
         identifier,
         password,
       });

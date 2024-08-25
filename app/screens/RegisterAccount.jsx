@@ -314,7 +314,7 @@ const RegisterAccount = () => {
       // Register User Account
       try {
         const response = await axios.post(
-          `http://${serverIPV4}:3000/register`,
+          `http://${serverIPV4}:3000/users/register`,
           {
             name,
             idNumber: id,
@@ -327,6 +327,14 @@ const RegisterAccount = () => {
           Alert.alert(
             "Registration Successful",
             "Your account has been registered successfully."
+          );
+          console.log("Response: ",response)
+          await axios.post(
+            `http://${serverIPV4}:3000/notifications`,
+            {
+              userId: response.data.user._id,
+              message:`Your account is succesfully registered with email ${email}, you may start using the application by registering a bill`
+            }
           );
           navigation.navigate("Login");
         }

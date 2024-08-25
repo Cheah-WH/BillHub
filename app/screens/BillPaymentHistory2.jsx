@@ -31,7 +31,7 @@ const BillPaymentHistory2 = ({ route }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://${serverIPV4}:3000/paymentHistory2/${billId}`
+        `http://${serverIPV4}:3000/payment-history/bill/${billId}`
       );
       setPaymentHistory(response.data);
       setLoading(false);

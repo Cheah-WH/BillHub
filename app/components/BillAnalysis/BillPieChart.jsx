@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Dimensions, StyleSheet, Image } from "react-native";
+import { View, Text, Dimensions, StyleSheet, Image, ScrollView } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
@@ -37,7 +37,7 @@ const BillPieChart = ({ data }) => {
         hasLegend={false} // Hides the default legend
       />
       {/* Custom Legend */}
-      <View style={styles.legendContainer}>
+      <ScrollView style={styles.legendContainer}>
         {chartData.map((item, index) => (
           <View key={index} style={styles.legendItem}>
             <View style={[styles.colorBox, { backgroundColor: item.color }]} />
@@ -51,7 +51,7 @@ const BillPieChart = ({ data }) => {
             </Text>
           </View>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -64,10 +64,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   legendContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     marginTop: 20,
-    justifyContent: "center",
+    width:230,
+    height:100,
   },
   legendItem: {
     flexDirection: "row",
