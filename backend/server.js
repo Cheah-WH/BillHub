@@ -1,8 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const bcrypt = require("bcryptjs"); // Use bcryptjs instead of bcrypt
-const jwt = require("jsonwebtoken");
+//const bcrypt = require("bcryptjs"); // Use bcryptjs instead of bcrypt
+//const jwt = require("jsonwebtoken");
 const app = express();
 const port = 3000;
 const { scheduleReminder, agenda } = require("./Agenda");
@@ -22,6 +22,7 @@ const billingCompanyRoutes = require('./routes/billingCompanyRoutes');
 const billRoutes = require('./routes/billRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const paymentHistoryRoutes = require('./routes/paymentHistoryRoutes');
+const autoBillingRoutes = require('./routes/autoBillingRoutes');
 
 // Middleware
 app.use(express.json());
@@ -56,6 +57,7 @@ app.use('/billing-companies', billingCompanyRoutes);
 app.use('/bills', billRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/payment-history', paymentHistoryRoutes);
+app.use('/auto-billing', autoBillingRoutes);
 
 // Trigger job scheduling for reminders
 app.post("/schedule-reminders", async (req, res) => {

@@ -12,28 +12,70 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
-import { COLORS, FONTS } from "../constant";
+import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useAuth } from "../../backend/AuthContext";
+import axios from "axios";
 
 const AutoBilling = () => {
   const navigation = useNavigation();
-  const { bills } = useAuth();
+  const { user, bills } = useAuth();
   const [section, setSection] = useState(0);
   const [selectedBill, setSelectedBill] = useState(null);
-  const [autoPaymentDate, setAutoPaymentDate] = useState("release");
+  const [autoPaymentDate, setAutoPaymentDate] = useState("billingdate");
   const [paymentAmount, setPaymentAmount] = useState("fixedAmount");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [inputValue, setInputValue] = useState(0);
   const [autoBills, setAutoBills] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const [autoBillsDetail, setAutoBillsDetail] = useState([]);
 
   useEffect(() => {
-    setAutoPaymentDate("release");
+    setAutoPaymentDate("billingdate");
     setPaymentAmount("fixedAmount");
     setInputValue("");
+
+    if (section === 0) {
+      const fetchAutoBillingBills = async () => {
+        try {
+          const response = await axios.get(
+            `http://${serverIPV4}:3000/auto-billing/user/${user._id}`
+          );
+
+          if (response.status === 200) {
+            setAutoBills(response.data);
+          } else {
+            Alert.alert("Failed to fetch auto-billing bills");
+          }
+        } catch (error) {
+          console.error("Error fetching auto-billing bills:", error);
+          Alert.alert("Error fetching auto-billing bills: ", error);
+        }
+      };
+      fetchAutoBillingBills();
+    }
   }, [section]);
+
+  useEffect(() => {
+    if (autoBills && autoBills.length > 0) {
+      const updatedAutoBills = autoBills.map((autoBill) => {
+        const matchedBill = bills.find((bill) => bill._id === autoBill.billId._id);
+        if (matchedBill) {
+          return {
+            ...autoBill,
+            nickname: matchedBill.nickname,
+            accountNumber: matchedBill.accountNumber,
+            ImageURL: matchedBill.company.ImageURL,
+          };
+        }
+        return autoBill;
+      });
+
+      setAutoBillsDetail(updatedAutoBills);
+    }
+  }, [autoBills]);
 
   useEffect(() => {
     setInputValue("");
@@ -61,9 +103,41 @@ const AutoBilling = () => {
     closeModal();
   };
 
-  const handleSave = () => {
-    // Logic to save AutoBilling details to the database
-    setSection(0); // Switch back to Section 0 after saving
+  const handleSave = async () => {
+    const autoBillingDetails = {
+      billId: selectedBill._id,
+      userId: user._id,
+      autoPaymentDate: autoPaymentDate,
+      paymentAmount: paymentAmount,
+      amount: inputValue,
+    };
+
+    try {
+      await saveAutoBilling(autoBillingDetails);
+      setSection(0);
+    } catch (error) {
+      Alert.alert("Failed to register auto billing: ", error.message);
+    }
+  };
+
+  const saveAutoBilling = async (autoBillingDetails) => {
+    try {
+      const response = await axios.post(
+        `http://${serverIPV4}:3000/auto-billing`,
+        autoBillingDetails
+      );
+
+      if (response.status !== 201) {
+        throw new Error("Failed to save AutoBilling details");
+      }
+
+      Alert.alert(
+        "The bills has been set to auto-billing ! The bill reminders are turned off"
+      );
+    } catch (error) {
+      console.error("Error:", error);
+      throw error;
+    }
   };
 
   return (
@@ -100,20 +174,26 @@ const AutoBilling = () => {
             <Text style={styles.autoBillsHeader}>Auto-billing bills</Text>
             {autoBills.length !== 0 ? (
               <FlatList
-                data={autoBills}
+                data={autoBillsDetail}
                 renderItem={({ item }) => (
                   <View style={styles.billItem}>
-                    <Text>{item.billName}</Text>
+                    <Image
+                      source={{ uri: item.ImageURL }}
+                      style={styles.image2}
+                    />
+                    <Text>{item.billId.nickname}</Text>
+                    <Text>{item.billId.accountNumber}</Text>
                     <Text>{item.autoPaymentDate}</Text>
-                    <Text>{item.paymentAmount}</Text>
+                    <Text>{item.amount}</Text>
+           
                   </View>
                 )}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id}
                 style={styles.billList}
               />
             ) : (
               <View style={styles.noBillView}>
-                <Text>
+                <Text style={{ textAlign: "center" }}>
                   No bill is registered with Auto-Billing, start now by adding a
                   bill
                 </Text>
@@ -139,18 +219,19 @@ const AutoBilling = () => {
               <TouchableOpacity
                 style={[
                   styles.optionButton,
-                  autoPaymentDate === "release" && styles.optionButtonSelected,
+                  autoPaymentDate === "billingdate" &&
+                    styles.optionButtonSelected,
                 ]}
-                onPress={() => setAutoPaymentDate("release")}
+                onPress={() => setAutoPaymentDate("billingdate")}
               >
                 <Text
                   style={
-                    autoPaymentDate === "release"
+                    autoPaymentDate === "billingdate"
                       ? styles.optionTextSelected
                       : styles.optionText
                   }
                 >
-                  Release Date
+                  Billing Date
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -241,7 +322,7 @@ const AutoBilling = () => {
               )}
               {paymentAmount === "outstandingAmount" && (
                 <View>
-                  <Text style={styles.label}>Upper Limit:</Text>
+                  <Text style={styles.label}>Maximum Transaction Allowed:</Text>
                   <View
                     style={{
                       flexDirection: "row",
@@ -264,7 +345,7 @@ const AutoBilling = () => {
                       value={inputValue}
                       onChangeText={setInputValue}
                       keyboardType="numeric"
-                      placeholder="Enter upper limit"
+                      placeholder="Enter payment cap"
                     />
                   </View>
                 </View>
@@ -337,7 +418,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     flexDirection: "row",
     backgroundColor: COLORS.primary,
-    height:42,
+    height: 42,
     alignItems: "center",
   },
   headerLeftView: {
