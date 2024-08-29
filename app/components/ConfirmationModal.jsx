@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, StatusBar } from "react-native";
 import { COLORS, FONTS } from "../constant";
 
 const ConfirmationModal = ({ visible, onClose, onConfirm, message }) => {
@@ -10,6 +10,10 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, message }) => {
       animationType="slide"
       onRequestClose={onClose}
     >
+      <StatusBar
+        backgroundColor="rgba(0, 0, 0, 0.5)"
+        barStyle="light-content"
+      />
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.message}>{message}</Text>
@@ -36,34 +40,34 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, message }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContainer: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 15,
     padding: 20,
-    alignItems: 'center',
-    height:170,
-    justifyContent:"space-between",
+    alignItems: "center",
+    height: 170,
+    justifyContent: "space-between",
   },
   message: {
     fontSize: 18,
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
   },
   button: {
     padding: 10,
     borderRadius: 5,
-    width: '45%',
-    alignItems: 'center',
+    width: "45%",
+    alignItems: "center",
   },
   cancelButton: {
     backgroundColor: COLORS.greyBackground,
@@ -72,9 +76,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   buttonText: {
-    color: 'black',
+    color: "black",
     fontSize: 16,
-    fontWeight:"bold",
+    fontWeight: "bold",
   },
 });
 

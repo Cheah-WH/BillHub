@@ -1,9 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, StatusBar } from "react-native";
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Importing the icon library
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  Alert,
+  StatusBar,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Importing the icon library
 import { COLORS, FONTS } from "../constant";
 
-const BillItem2 = ({ bill, onPaymentAmountChange }) => {
+const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
   const {
     company,
     nickname,
@@ -18,18 +28,22 @@ const BillItem2 = ({ bill, onPaymentAmountChange }) => {
 
   const formatDate = (date) => {
     const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are zero-based
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
   const formattedDueDate = dueDate ? formatDate(dueDate) : null;
-  const formattedOutstandingAmount = outStandingAmount ? outStandingAmount.toFixed(2) : "0.00";
+  const formattedOutstandingAmount = outStandingAmount
+    ? outStandingAmount.toFixed(2)
+    : "0.00";
   const overdue = overdueAmount && overdueAmount > 0;
 
   // Calculate the number of days before the due date
-  const daysBeforeDue = dueDate ? Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  const daysBeforeDue = dueDate
+    ? Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24))
+    : null;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newPaymentAmount, setNewPaymentAmount] = useState("");
@@ -45,8 +59,16 @@ const BillItem2 = ({ bill, onPaymentAmountChange }) => {
 
   const handleOk = () => {
     const amount = parseFloat(newPaymentAmount);
-    if (isNaN(amount) || amount <= 0 || amount > 999 || !/^\d+(\.\d{1,2})?$/.test(newPaymentAmount)) {
-      Alert.alert("Invalid Input", "Please enter a valid amount up to 999 with 2 decimal places.");
+    if (
+      isNaN(amount) ||
+      amount <= 0 ||
+      amount > 999 ||
+      !/^\d+(\.\d{1,2})?$/.test(newPaymentAmount)
+    ) {
+      Alert.alert(
+        "Invalid Input",
+        "Please enter a valid amount up to 999 with 2 decimal places."
+      );
       return;
     }
     bill.paymentAmount = amount;
@@ -64,7 +86,14 @@ const BillItem2 = ({ bill, onPaymentAmountChange }) => {
           <View style={styles.dueDateContainer}>
             <Text style={styles.dueDate}>{formattedDueDate}</Text>
             {daysBeforeDue !== null && (
-              <Text style={styles.daysBeforeDue}>({daysBeforeDue} days)</Text>
+              <Text
+                style={[
+                  styles.daysBeforeDue,
+                  daysBeforeDue < 0 && { color: "red" },
+                ]}
+              >
+                ({daysBeforeDue} days)
+              </Text>
             )}
           </View>
         )}
@@ -88,28 +117,40 @@ const BillItem2 = ({ bill, onPaymentAmountChange }) => {
         )}
       </View>
       {(status === "Approved" || status === "Active") && (
-      <View style={styles.editContainer}>
-        <Text style={ styles.paymentAmount}>
-          RM {paymentAmount ? paymentAmount.toFixed(2) : formattedOutstandingAmount}
-        </Text>
-        <TouchableOpacity style={styles.editButton} onPress={handleEditPress}>
-          <View style={styles.editButtonContent}>
-            <Icon name="edit" size={16} color="#fff" />
-            <Text style={styles.editButtonText}>Edit</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.editContainer}>
+          <Text style={styles.paymentAmount}>
+            RM{" "}
+            {paymentAmount
+              ? paymentAmount.toFixed(2)
+              : formattedOutstandingAmount}
+          </Text>
+          <TouchableOpacity style={styles.editButton} onPress={handleEditPress}>
+            <View style={styles.editButtonContent}>
+              <Icon name="edit" size={16} color="#fff" />
+              <Text style={styles.editButtonText}>Edit</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       )}
-      <Modal visible={isModalVisible} transparent={true} animationType="slide" onRequestClose={handleCancel}>
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleCancel}
+      >
         <View style={styles.modalContainer}>
-          <StatusBar backgroundColor="rgba(0, 0, 0, 0.5)" barStyle="light-content" />
+          <StatusBar
+            backgroundColor="rgba(0, 0, 0, 0.5)"
+            barStyle="light-content"
+          />
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Payment Amount</Text>
             <Text style={styles.modalText}>
               Outstanding Amount: RM {formattedOutstandingAmount}
             </Text>
             <Text style={styles.modalText}>
-              Overdue Amount: RM {overdueAmount ? overdueAmount.toFixed(2) : "0.00"}
+              Overdue Amount: RM{" "}
+              {overdueAmount ? overdueAmount.toFixed(2) : "0.00"}
             </Text>
             <TextInput
               style={styles.input}
@@ -117,10 +158,13 @@ const BillItem2 = ({ bill, onPaymentAmountChange }) => {
               onChangeText={setNewPaymentAmount}
               keyboardType="numeric"
               placeholder="Enter amount to pay"
-              onFocus={()=> setIsModalVisible(true)} //Ensure modal stay open
+              onFocus={() => setIsModalVisible(true)} //Ensure modal stay open
             />
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.modalButtonCancel} onPress={handleCancel}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={handleCancel}
+              >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalButton} onPress={handleOk}>
@@ -179,8 +223,8 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   amountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 2,
   },
   amountLabel: {
@@ -198,8 +242,8 @@ const styles = StyleSheet.create({
     color: "red",
     fontWeight: "bold",
   },
-  paymentAmount:{
-    fontWeight:"bold",
+  paymentAmount: {
+    fontWeight: "bold",
     fontSize: 15,
   },
   editContainer: {
@@ -213,8 +257,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   editButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   editButtonText: {
     color: "#fff",
@@ -276,4 +320,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BillItem2;
+export default BillPaymentItem;

@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import { COLORS, FONTS } from "../constant";
 
-const BillItem3 = ({ bill }) => {
+const BillPaymentItemConfirmation = ({ bill }) => {
   const {
     company,
     nickname,
@@ -144,4 +144,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default BillItem3;
+export default BillPaymentItemConfirmation;

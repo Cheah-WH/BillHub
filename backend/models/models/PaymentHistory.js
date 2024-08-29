@@ -5,7 +5,6 @@ const PaymentHistorySchema = new mongoose.Schema(
     transactionId: {
       type: String,
       required: true,
-      unique: true,
     },
     billId: {
       type: mongoose.Schema.Types.ObjectId,

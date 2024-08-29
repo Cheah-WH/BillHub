@@ -13,7 +13,7 @@ import Checkbox from "expo-checkbox";
 import { COLORS, FONTS } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
-import BillItem2 from "../components/BillItem2";
+import BillPaymentItem from "../components/BillPaymentItem";
 import { useAuth } from "../../backend/AuthContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -128,7 +128,7 @@ const Payment = ({ route }) => {
                   paddingHorizontal: 10,
                 }}
               >
-                <BillItem2
+                <BillPaymentItem
                   bill={item}
                   onPaymentAmountChange={updatePaymentAmount} // Pass the function as a prop
                 />

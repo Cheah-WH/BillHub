@@ -10,7 +10,7 @@ import {
 import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
-import BillItem3 from "../components/BillItem3";
+import BillPaymentItemConfirmation from "../components/BillPaymentItemConfirmation";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
@@ -32,8 +32,9 @@ const PaymentConfirmation = ({ route }) => {
 
   const handlePay = async () => {
     try {
+      const dateTime = Date.now();
       const paymentHistories = selectedBillData.map((bill) => ({
-        transactionId: `txn_${Date.now()}_${bill._id}`,
+        transactionId: `txn_${dateTime}_${user._id}`,
         billId: bill._id,
         userId: user._id,
         billingCompanyId: bill.company._id,
@@ -86,7 +87,7 @@ const PaymentConfirmation = ({ route }) => {
         <View style={styles.bodyTop}>
           <FlatList
             data={selectedBillData}
-            renderItem={({ item }) => <BillItem3 bill={item} />}
+            renderItem={({ item }) => <BillPaymentItemConfirmation bill={item} />}
             keyExtractor={(item) => item._id.toString()}
           />
         </View>

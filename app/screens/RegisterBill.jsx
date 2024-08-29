@@ -226,7 +226,7 @@ const RegisterBill = ({ route }) => {
                 </TouchableOpacity>
                 <TextInput
                   ref={inputRef}
-                  placeholder="Enter the name of the bill"
+                  placeholder="Enter the name of the company"
                   onChangeText={handleSearch}
                   w={{
                     base: "75%",

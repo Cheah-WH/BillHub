@@ -5,7 +5,9 @@ const bcrypt = require('bcryptjs');
 exports.registerUser = async (req, res) => {
   const { name, idNumber, phoneNumber, email, password } = req.body;
   try {
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email already used to register an account!" });
     }
@@ -22,7 +24,7 @@ exports.registerUser = async (req, res) => {
       name,
       idNumber,
       phoneNumber,
-      email,
+      email: normalizedEmail, 
       password: hashedPassword,
     });
 
@@ -37,7 +39,16 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { identifier, password } = req.body;
   try {
-    const user = await User.findOne({ $or: [{ email: identifier }, { phoneNumber: identifier }] });
+    let query;
+    
+    // Check if user with email (contains "@")
+    if (identifier.includes('@')) {
+      query = { email: identifier.toLowerCase() }; // Convert email to lowercase
+    } else {
+      query = { phoneNumber: identifier };
+    }
+
+    const user = await User.findOne(query);
     if (!user) {
       return res.status(400).json({ message: "Account not found!" });
     }

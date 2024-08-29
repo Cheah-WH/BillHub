@@ -19,6 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useAuth } from "../../backend/AuthContext";
 import axios from "axios";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const AutoBilling = () => {
   const navigation = useNavigation();
@@ -31,6 +32,7 @@ const AutoBilling = () => {
   const [inputValue, setInputValue] = useState(0);
   const [autoBills, setAutoBills] = useState([]);
   const [autoBillsDetail, setAutoBillsDetail] = useState([]);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useEffect(() => {
     setAutoPaymentDate("billingdate");
@@ -61,7 +63,9 @@ const AutoBilling = () => {
   useEffect(() => {
     if (autoBills && autoBills.length > 0) {
       const updatedAutoBills = autoBills.map((autoBill) => {
-        const matchedBill = bills.find((bill) => bill._id === autoBill.billId._id);
+        const matchedBill = bills.find(
+          (bill) => bill._id === autoBill.billId._id
+        );
         if (matchedBill) {
           return {
             ...autoBill,
@@ -127,18 +131,23 @@ const AutoBilling = () => {
         autoBillingDetails
       );
 
-      if (response.status !== 201) {
-        throw new Error("Failed to save AutoBilling details");
-      }
-
       Alert.alert(
         "The bills has been set to auto-billing ! The bill reminders are turned off"
       );
     } catch (error) {
       console.error("Error:", error);
+      Alert.alert(error);
       throw error;
     }
   };
+
+  const handleDelete = () => {
+    deleteAutoBilling;
+    setDeleteModalVisible(false);
+  }
+  const deleteAutoBilling = () => {
+    console.log("Hehe")
+  }
 
   return (
     <KeyboardAvoidingView
@@ -169,7 +178,7 @@ const AutoBilling = () => {
               <Text style={styles.addButtonText}>
                 Add bill for auto-billing{" "}
               </Text>
-              <AntDesignIcon name="down" size={16} color="#000" />
+              <AntDesignIcon name="pluscircle" size={16} color="#000" />
             </TouchableOpacity>
             <Text style={styles.autoBillsHeader}>Auto-billing bills</Text>
             {autoBills.length !== 0 ? (
@@ -177,15 +186,46 @@ const AutoBilling = () => {
                 data={autoBillsDetail}
                 renderItem={({ item }) => (
                   <View style={styles.billItem}>
-                    <Image
-                      source={{ uri: item.ImageURL }}
-                      style={styles.image2}
-                    />
-                    <Text>{item.billId.nickname}</Text>
-                    <Text>{item.billId.accountNumber}</Text>
-                    <Text>{item.autoPaymentDate}</Text>
-                    <Text>{item.amount}</Text>
-           
+                    <View style={styles.billItemLeft}>
+                      <Image
+                        source={{ uri: item.ImageURL }}
+                        style={styles.image2}
+                      />
+                      <Text style={styles.billItemLeftText} numberOfLines={1}>
+                        {item.billId.nickname
+                          ? item.billId.nickname
+                          : item.billId.accountNumber}
+                      </Text>
+                    </View>
+                    <View style={styles.billItemMid}>
+                      <Text style={styles.billItemMidLabel}>
+                        Auto-Billing On
+                      </Text>
+                      <Text>
+                        {item.autoPaymentDate === "duedate"
+                          ? "Due Date"
+                          : "Billing Date"}
+                      </Text>
+                      {item.paymentAmount === "outstandingAmount" ? (
+                        <Text style={styles.billItemMidLabel}>
+                          Maximum Payment Allowed
+                        </Text>
+                      ) : (
+                        <Text style={styles.billItemMidLabel}>
+                          Fixed Payment Amount
+                        </Text>
+                      )}
+                      <Text>RM {item.amount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.billItemRight}>
+                      <TouchableOpacity onPress={() => {setDeleteModalVisible(true)}}>
+                        <AntDesignIcon
+                          name="minuscircle"
+                          size={25}
+                          color="#ff4d4d"
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
                 keyExtractor={(item) => item._id}
@@ -403,6 +443,14 @@ const AutoBilling = () => {
             </View>
           </TouchableOpacity>
         </Modal>
+
+        {/* Modal for delete confirmation */}
+        <ConfirmationModal
+          visible={deleteModalVisible}
+          onClose={() => setDeleteModalVisible(false)}
+          onConfirm={()=>handleDelete()}
+          message="Are you sure you want to remove auto-billing for this bill ?"
+        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -521,9 +569,35 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   billItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey,
+    flexDirection: "row",
+    padding: 10,
+    backgroundColor: COLORS.plain,
+    margin: 10,
+    borderRadius: 25,
+    borderColor: COLORS.primary,
+    borderWidth: 1.5,
+  },
+  billItemLeft: {
+    width: 80,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  billItemLeftText: {
+    fontSize: 11,
+    marginTop: 3,
+    fontWeight: "bold",
+  },
+  billItemMid: {
+    flex: 1,
+  },
+  billItemMidLabel: {
+    fontSize: 10,
+    color: "#678",
+  },
+  billItemRight: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
   },
   modalOverlay: {
     flex: 1,

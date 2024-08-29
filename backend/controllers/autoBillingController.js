@@ -5,13 +5,20 @@ const AutoBilling = require("../models/models/AutoBilling");
 // Create a new AutoBilling record
 exports.createAutoBilling = async (req, res) => {
   try {
-    const { billId, userId, autoPaymentDate, paymentAmount, amount } =
-      req.body;
+    const { billId, userId, autoPaymentDate, paymentAmount, amount } = req.body;
 
     if (amount === undefined || amount === null) {
       return res
         .status(400)
-        .json({ error: "Amount is required to automate payment ." });
+        .json({ error: "Amount is required to automate payment." });
+    }
+
+    // Check if an AutoBilling record with the same billId already exists
+    const existingAutoBilling = await AutoBilling.findOne({ billId, userId });
+    if (existingAutoBilling) {
+      return res
+        .status(400)
+        .json({ error: "AutoBilling already set for this bill." });
     }
 
     const newAutoBilling = new AutoBilling({
@@ -25,10 +32,11 @@ exports.createAutoBilling = async (req, res) => {
     await newAutoBilling.save();
     res.status(201).json(newAutoBilling);
   } catch (error) {
-    res.status(500).json({ error: $error.message });
-    console.log("Backend Error : ",error);
+    res.status(500).json({ error: error.message });
+    console.log("Server Error:", error);
   }
 };
+
 
 // Get AutoBilling records for a specific user
 exports.getAutoBillingByUser = async (req, res) => {

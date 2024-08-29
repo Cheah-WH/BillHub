@@ -395,6 +395,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingRight: 15,
     backgroundColor: COLORS.greyBackground,
+    height:90,
   },
   leftView: {
     alignItems: "center",
