@@ -445,12 +445,12 @@ const styles = StyleSheet.create({
   logoNameContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1, // Allow it to take up space as needed
+    flex: 1, 
   },
   image: {
     width: 40,
     height: 40,
-    marginLeft: 10, // Add some margin to the right of the image
+    marginLeft: 10,
     marginVertical: 10,
     resizeMode: "contain",
   },

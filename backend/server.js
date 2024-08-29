@@ -23,6 +23,7 @@ const billRoutes = require('./routes/billRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const paymentHistoryRoutes = require('./routes/paymentHistoryRoutes');
 const autoBillingRoutes = require('./routes/autoBillingRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Middleware
 app.use(express.json());
@@ -58,6 +59,7 @@ app.use('/bills', billRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/payment-history', paymentHistoryRoutes);
 app.use('/auto-billing', autoBillingRoutes);
+app.use('/payments',paymentRoutes);
 
 // Trigger job scheduling for reminders
 app.post("/schedule-reminders", async (req, res) => {

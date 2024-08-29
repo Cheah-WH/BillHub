@@ -58,7 +58,7 @@ const BillLineChart = ({ data }) => {
         }}
         width={screenWidth - 40}
         height={220}
-        fromZero={true}
+        fromZero={false}
         chartConfig={{
           backgroundColor: "#ffffff",
           backgroundGradientFrom: "#eff3ff",
@@ -74,6 +74,8 @@ const BillLineChart = ({ data }) => {
             stroke: "#ffa726",
           },
           decimalPlaces: 0,
+          fillShadowGradientFrom: "#ffffff00",
+          fillShadowGradientTo: "#ffffff00",
         }}
         style={styles.chart}
         onDataPointClick={handleDataPointClick}

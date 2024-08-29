@@ -60,16 +60,16 @@ const HomeScreen = () => {
   };
 
   const reload = async () => {
-    console.log("Reload is triggered one time ");
-    try {
-      const updatedUser = await updateCredit(parseFloat(100));
-      setUser(updatedUser);
-      Alert.alert("Success", "Credit reloaded successfully");
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "An error occurred";
-      Alert.alert("Error", errorMessage);
-    }
+    navigation.navigate("Reload");
+    // try {
+    //   const updatedUser = await updateCredit(parseFloat(100));
+    //   setUser(updatedUser);
+    //   Alert.alert("Success", "Credit reloaded successfully");
+    // } catch (error) {
+    //   const errorMessage =
+    //     error.response?.data?.message || error.message || "An error occurred";
+    //   Alert.alert("Error", errorMessage);
+    // }
   };
 
   // Pull To Refresh Bills
