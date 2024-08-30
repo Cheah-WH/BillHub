@@ -17,18 +17,19 @@ import { Picker } from "@react-native-picker/picker";
 import BillPieChart from "../components/BillAnalysis/BillPieChart";
 import BillLineChart from "../components/BillAnalysis/BillLineChart";
 
-const BillAnalysis = () => {
+const BillingAnalysis = () => {
   const navigation = useNavigation();
   const [section, setSection] = useState(0);
   const { user } = useAuth();
-  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [billingHistory, setbillingHistory] = useState([]);
   const [groupedHistory, setGroupedHistory] = useState({});
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [pieChartData, setPieChartData] = useState([]);
-  const [totalPaymentAmount, setTotalPaymentAmount] = useState(0); //Total for selected month
-  const [totalOfMonths, setTotalOfMonths] = useState({ //Total of each month 
+  const [totalbillingAmount, setTotalbillingAmount] = useState(0); //Total for selected month
+  const [totalOfMonths, setTotalOfMonths] = useState({
+    //Total of each month
     labels: [],
     values: [],
   });
@@ -41,7 +42,7 @@ const BillAnalysis = () => {
       Object.keys(groupedHistory).forEach((monthYear) => {
         labels.push(monthYear);
         const totalPayment = groupedHistory[monthYear].reduce(
-          (sum, item) => sum + item.paymentAmount,
+          (sum, item) => sum + item.billingAmount,
           0
         );
         values.push(totalPayment);
@@ -56,36 +57,36 @@ const BillAnalysis = () => {
   };
 
   useEffect(() => {
-    console.log("Payment History: ", paymentHistory);
-  }, [paymentHistory]);
+    console.log("Billing History: ", billingHistory);
+  }, [billingHistory]);
 
   useEffect(() => {
     console.log("BillPieChart Data: ", pieChartData);
   }, [pieChartData]);
 
-  const fetchPaymentHistory = async () => {
+  const fetchbillingHistory = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://${serverIPV4}:3000/payment-history/${user._id}`
+        `http://${serverIPV4}:3000/billing-history/user/${user._id}`
       );
-      setPaymentHistory(response.data);
+      setbillingHistory(response.data);
       setLoading(false);
     } catch (error) {
-      console.error("Error retrieving payment history:", error);
+      console.error("Error retrieving billing history:", error);
       setLoading(false);
     }
   };
 
   useEffect(() => {
     console.log("User id: ", user._id);
-    fetchPaymentHistory();
+    fetchbillingHistory();
   }, [user]);
 
   useEffect(() => {
-    if (paymentHistory.length) {
-      const grouped = paymentHistory.reduce((acc, item) => {
-        const date = new Date(item.paymentDate);
+    if (billingHistory.length) {
+      const grouped = billingHistory.reduce((acc, item) => {
+        const date = new Date(item.billingDate);
         const monthYear = date.toLocaleString("en-GB", {
           month: "long",
           year: "numeric",
@@ -98,7 +99,7 @@ const BillAnalysis = () => {
       }, {});
       setGroupedHistory(grouped);
     }
-  }, [paymentHistory]);
+  }, [billingHistory]);
 
   useEffect(() => {
     if (groupedHistory) {
@@ -112,7 +113,7 @@ const BillAnalysis = () => {
     if (selectedMonth && groupedHistory[selectedMonth]) {
       const updatedPieChartData = groupedHistory[selectedMonth].map((item) => {
         const name = item.billId.nickname || item.billId.accountNumber;
-        const amount = item.paymentAmount;
+        const amount = item.billingAmount;
         const logo = item.billingCompanyId.ImageURL;
         return { name, amount, logo };
       });
@@ -123,7 +124,7 @@ const BillAnalysis = () => {
         (sum, item) => sum + item.amount,
         0
       );
-      setTotalPaymentAmount(totalAmount); // Update the total payment amount
+      setTotalbillingAmount(totalAmount); // Update the total payment amount
     }
   }, [selectedMonth, groupedHistory]);
 
@@ -140,9 +141,17 @@ const BillAnalysis = () => {
           />
         </View>
         <View style={styles.headerMidView}>
-          <Text style={styles.title}> Bill Analysis </Text>
+          <Text style={styles.title}> Billing Analysis </Text>
         </View>
-        <View style={styles.headerRightView}></View>
+        <View style={styles.headerRightView}>
+          <AntDesignIcon
+            style={styles.backIcon}
+            name="wallet"
+            size={28}
+            color="#000"
+            onPress={()=>{navigation.navigate("BillPaymentAnalysis")}}
+          />
+        </View>
       </View>
       <View style={styles.body}>
         {(section === 0 || section === 1) && (
@@ -192,7 +201,7 @@ const BillAnalysis = () => {
             <BillPieChart data={pieChartData} />
             <View style={styles.totalAmountContainer}>
               <Text style={styles.totalAmountText}>
-                Total: RM {totalPaymentAmount.toFixed(2)}
+                Total: RM {totalbillingAmount.toFixed(2)}
               </Text>
             </View>
           </View>
@@ -234,7 +243,7 @@ const BillAnalysis = () => {
             </ScrollView>
             <View style={styles.totalAmountContainer}>
               <Text style={styles.totalAmountText}>
-                Total: RM {totalPaymentAmount.toFixed(2)}
+                Total: RM {totalbillingAmount.toFixed(2)}
               </Text>
             </View>
           </View>
@@ -445,7 +454,7 @@ const styles = StyleSheet.create({
   logoNameContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1, 
+    flex: 1,
   },
   image: {
     width: 40,
@@ -456,4 +465,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BillAnalysis;
+export default BillingAnalysis;

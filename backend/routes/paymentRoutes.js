@@ -5,12 +5,8 @@ const stripe = require("stripe")("sk_test_51PtFfiE9Am30zOrlPxu5HitLEu6v9PBGjNsiv
 // Router endpoints
 router.post("/intents", async (req, res) => {
   try {
-    // Log the request body for debugging
-    console.log("Request Body:", req.body);
-
     // Validate request data
     if (!req.body.amount || typeof req.body.amount !== 'number' || req.body.amount <= 0) {
-      console.error("Invalid amount:", req.body.amount);
       return res.status(400).json({ error: "Invalid amount" });
     }
 
@@ -23,16 +19,9 @@ router.post("/intents", async (req, res) => {
       },
     });
 
-    // Log successful creation of paymentIntent
-    console.log("PaymentIntent Created:", paymentIntent);
-
     // Return the client_secret
     res.json({ paymentIntent: paymentIntent.client_secret });
   } catch (err) {
-    // Log the error for debugging
-    console.error("Error Creating PaymentIntent:", err);
-
-    // Send the error response
     res.status(400).json({
       error: err.message,
     });

@@ -1,4 +1,5 @@
-const Bill = require('../models/models/Bill');
+const Bill = require("../models/models/Bill");
+const BillingHistory = require("../models/models/BillingHistory"); // To save billing history
 
 // Bill Registration
 exports.registerBill = async (req, res) => {
@@ -44,12 +45,31 @@ exports.getBillsByUserId = async (req, res) => {
 // Bill Information Update (Third Party - Billing Company)
 exports.updateBill = async (req, res) => {
   try {
-    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
     if (!updatedBill) {
+      console.log("Bill not found");
       return res.status(404).send("Bill not found");
+    }
+
+    const { billingAmount } = req.body;
+    if (billingAmount > 0) {
+      const billingHistory = new BillingHistory({
+        // Create a BillingHistory record
+        billingDate: req.body.billingDate,
+        billingAmount: billingAmount,
+        status: "Completed",
+        userId: updatedBill.userId,
+        billingCompanyId: updatedBill.billingCompanyId,
+        billId: updatedBill._id,
+      });
+      await billingHistory.save();
     }
     res.json(updatedBill);
   } catch (err) {
+    console.error("An error occurred while updating the bill:", err);
     res.status(500).send("An error occurred while updating the bill");
   }
 };
@@ -62,7 +82,11 @@ exports.updateBillNickname = async (req, res) => {
       return res.status(400).send("Nickname cannot be empty");
     }
 
-    const updatedBill = await Bill.findByIdAndUpdate(req.params.id, { nickname }, { new: true });
+    const updatedBill = await Bill.findByIdAndUpdate(
+      req.params.id,
+      { nickname },
+      { new: true }
+    );
     if (!updatedBill) {
       return res.status(404).send("Bill not found");
     }
@@ -137,4 +161,3 @@ exports.updateAllBillReminders = async (req, res) => {
     res.status(500).send("An error occurred while updating bill reminders");
   }
 };
-

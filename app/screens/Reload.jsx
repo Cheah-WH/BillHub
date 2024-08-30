@@ -8,6 +8,7 @@ import {
   Button,
   Alert,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
@@ -47,10 +48,10 @@ const ReloadPage = () => {
   const onReload = async () => {
     console.log("ON RELOAD");
     // 1. Create payment Intent
+    console.log("Step 1");
     const response = await createPaymentIntent(Math.floor(amount * 100));
     console.log("response: ", response);
     if (response.error) {
-      Alert.alert("Step 1 Error: ", response.error);
       console.log("Step 1 Error: ", response.error);
       return;
     }
@@ -58,7 +59,13 @@ const ReloadPage = () => {
     // 2. Intialize payment sheet
     const initResponse = await initPaymentSheet({
       merchantDisplayName: "BillHub",
-      paymentIntentClientSecret: response.data.paymentIntent,
+      paymentIntentClientSecret: response,
+      paymentMethodTypes: ["card", "fpx"],
+      defaultBillingDetails: {
+        address: {
+          country: "MY", // ISO 3166-1 alpha-2 country code (e.g., 'MY' for Malaysia)
+        },
+      },
     });
     if (initResponse.error) {
       console.log("Step 2 Error: ", initResponse.error);
@@ -95,25 +102,42 @@ const ReloadPage = () => {
         <View style={styles.headerMidView}>
           <Text style={styles.title}>Reload</Text>
         </View>
+        <View style={styles.headerRightView}></View>
       </View>
 
       {/* Body */}
       <View style={styles.body}>
-        <Text style={styles.bodyText}>Select an amount to reload:</Text>
-        {/* Add your reload options here */}
-        <Button
-          title="Reload $10"
-          onPress={() => {
-            /* handle reload */
-          }}
-        />
-        <Button
-          title="Reload $20"
-          onPress={() => {
-            /* handle reload */
-          }}
-        />
-        {/* Add more options as needed */}
+        <Text style={styles.bodyText}>Enter the amount to reload:</Text>
+        <View style={styles.inputView}>
+          <Text style={styles.inputValue}>RM</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter reload amount"
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={(text) => setAmount(text)}
+          />
+        </View>
+
+        <Text style={styles.bodyText}>Or select an amount:</Text>
+        <View style={styles.amountButtonsContainer}>
+          {["50", "100", "200", "300", "500", "1000"].map((value) => (
+            <TouchableOpacity
+              key={value}
+              onPress={() => setAmount(value)}
+              style={styles.amountButton}
+            >
+              <Text style={styles.amountButtonText}>RM {value}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={styles.noteView}>
+          <Text style={styles.noteTextBold}>Note : </Text>
+          <Text style={styles.noteText}>
+           To ensure smooth auto-billing process, make sure your account is
+            having sufficient credits
+          </Text>
+        </View>
       </View>
 
       {/* Footer */}
@@ -172,7 +196,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 35,
     width: "50%",
-    marginBottom: 15,
+    marginBottom: 18,
   },
   reloadText: {
     fontWeight: "bold",
@@ -191,10 +215,63 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
     color: "#555",
+    textDecorationLine: 'underline',
+  },
+  noteView:{
+    marginTop: 20,
+    flexDirection:"row",
+    justifyContent:"flex-start"
+  },
+  noteTextBold:{
+    fontWeight:"bold",
+    fontSize: 14,
+  },
+  noteText: {
+    fontSize: 14,
+    textAlign:"left",
+    width:300,
   },
   footerText: {
     fontSize: 16,
     color: "#333",
+  },
+  inputView: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputValue: {
+    fontWeight: "bold",
+    fontSize: 25,
+    marginBottom: 20,
+    marginRight: 5,
+  },
+  input: {
+    height: 50,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    fontSize: 18,
+    marginBottom: 20,
+    backgroundColor: "#fff",
+  },
+  amountButtonsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  amountButton: {
+    width: "30%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  amountButtonText: {
+    fontSize: 16,
+    color: "#fff",
   },
 });
 

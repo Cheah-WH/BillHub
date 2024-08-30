@@ -210,7 +210,7 @@ const HomeScreen = () => {
             <TouchableOpacity
               style={{ alignItems: "center" }}
               onPress={() => {
-                navigation.navigate("BillAnalysis");
+                navigation.navigate("BillPaymentAnalysis");
               }}
             >
               <Image

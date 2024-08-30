@@ -12,7 +12,8 @@ import MyBills from "../screens/MyBills";
 import BillPaymentHistory from "../screens/BillPaymentHistory";
 import BillPaymentHistory2 from "../screens/BillPaymentHistory2";
 import AutoBilling from "../screens/AutoBilling";
-import BillAnalysis from "../screens/BillAnalysis";
+import BillPaymentAnalysis from "../screens/BillPaymentAnalysis";
+import BillingAnalysis from "../screens/BillingAnalysis";
 import BillReminder from "../screens/BillReminder";
 import Setting from "../screens/Setting";
 import MyProfile from "../screens/MyProfile";
@@ -65,7 +66,7 @@ function DrawerNavigation() {
       />
       <Drawer.Screen
         name="Bill Analysis"
-        component={BillAnalysis}
+        component={BillPaymentAnalysis}
         options={{ headerShown: false }}
       />
       <Drawer.Screen
@@ -94,7 +95,8 @@ export default function Navigation() {
       <Stack.Screen name="Notification" component={Notification} options={{ headerShown: false }}/>
       <Stack.Screen name="MyProfile" component={MyProfile} options={{ headerShown: false }}/>
       <Stack.Screen name="RegisterBill" component={RegisterBill} options={{ headerShown: false }}/>
-      <Stack.Screen name="BillAnalysis" component={BillAnalysis} options={{ headerShown: false }}/>
+      <Stack.Screen name="BillPaymentAnalysis" component={BillPaymentAnalysis} options={{ headerShown: false }}/>
+      <Stack.Screen name="BillingAnalysis" component={BillingAnalysis} options={{ headerShown: false }}/>
       <Stack.Screen name="AutoBilling" component={AutoBilling} options={{ headerShown: false }}/>
       <Stack.Screen name="MyBills" component={MyBills} options={{ headerShown: false }}/>
       <Stack.Screen name="RegisterAccount" component={RegisterAccount} options={{ headerShown: false }}/>
