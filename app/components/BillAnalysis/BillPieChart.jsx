@@ -16,6 +16,11 @@ const BillPieChart = ({ data }) => {
     logo: item.logo, // Assuming 'logo' is part of your data object
   }));
 
+  // truncate text to prevent overflow
+  const truncateText = (text, maxLength) => {
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  };
+
   return (
     <View style={styles.container}>
       <PieChart
@@ -46,7 +51,7 @@ const BillPieChart = ({ data }) => {
               style={styles.logo} // Added logo image
             />
             <Text style={styles.legendText}>
-              {item.name} - {((item.population / totalAmount) * 100).toFixed(2)}
+              {truncateText(item.name,21)} - {((item.population / totalAmount) * 100).toFixed(2)}
               %
             </Text>
           </View>
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
   },
   legendContainer: {
     marginTop: 20,
-    width:230,
+    width:240,
     height:100,
   },
   legendItem: {

@@ -78,7 +78,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// Route to update user's credit
+// Route to top up user's credit
 exports.updateUserCredit = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -89,6 +89,25 @@ exports.updateUserCredit = async (req, res) => {
       return res.status(404).send("User account not found");
     }
     user.credit = (user.credit + amount).toFixed(2);
+    await user.save();
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).send("An error occurred while updating the user credit");
+  }
+};
+
+// Route to deduct user's credit
+exports.deductUserCredit = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { totalAmount } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send("User account not found");
+    }
+    user.credit = (user.credit - totalAmount).toFixed(2);
     await user.save();
 
     res.json(user);

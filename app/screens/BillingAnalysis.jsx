@@ -53,7 +53,7 @@ const BillingAnalysis = () => {
   }, [groupedHistory]);
 
   const back = () => {
-    navigation.goBack();
+    navigation.navigate("Drawer");
   };
 
   useEffect(() => {

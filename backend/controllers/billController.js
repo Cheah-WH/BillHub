@@ -31,12 +31,24 @@ exports.registerBill = async (req, res) => {
   }
 };
 
-// Bill Retrieval
+// Bill Retrieval By User Id
 exports.getBillsByUserId = async (req, res) => {
   const { userId } = req.params;
   try {
     const bills = await Bill.find({ userId });
     res.status(200).json(bills);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Bill Retrieval By Bill Id
+exports.getBillsByBillId = async (req, res) => {
+  console.log("Reach second place");
+  const { billId } = req.params;
+  try {
+    const bill = await Bill.findById({ billId });
+    res.status(200).json(bill);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

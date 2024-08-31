@@ -34,7 +34,7 @@ const BillDetail = ({ route }) => {
     deleteBill(bill._id);
     setDeleteModalVisible(false);
     Alert.alert("The selected bill is successfully deleted");
-    navigation.navigate("Home");
+    navigation.navigate("Drawer");
   };
 
   return (

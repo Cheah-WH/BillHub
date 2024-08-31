@@ -16,8 +16,6 @@ exports.createPaymentHistory = async (req, res) => {
       // Create multiple payment histories
       const result = await PaymentHistory.insertMany(paymentHistories);
   
-      console.log("Result returned after saving payment history: ", result);
-  
       const notifications = result.map(async (history) => {
         // Populate the related documents for additional details
         const paymentHistory = await PaymentHistory.findById(history._id)

@@ -52,7 +52,7 @@ const BillPaymentAnalysis = () => {
   }, [groupedHistory]);
 
   const back = () => {
-    navigation.navigate("Home");
+    navigation.navigate("Drawer");
   };
 
   useEffect(() => {

@@ -239,7 +239,7 @@ const BillInfo = ({ bill }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={()=>navigation.navigate("BillPaymentHistory2", { billId: _id })}
+              onPress={()=>navigation.navigate("SingleBillPaymentHistory", { billId: _id })}
             >
               <FontAwesome5 name="eye" size={16} color="black" />
               <Text style={styles.actionText}>History</Text>

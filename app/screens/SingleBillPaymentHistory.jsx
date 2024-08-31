@@ -14,18 +14,21 @@ import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
 
-const BillPaymentHistory2 = ({ route }) => {
+const SingleBillPaymentHistory = ({ route }) => {
   const { billId } = route.params;
   const navigation = useNavigation();
   const { user } = useAuth();
   const [paymentHistory, setPaymentHistory] = useState([]);
-  const [groupedHistory, setGroupedHistory] = useState({});
+  const [billingHistory, setBillingHistory] = useState([]);
+  const [groupedPaymentHistory, setGroupedPaymentHistory] = useState({});
+  const [groupedBillingHistory, setGroupedBillingHistory] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     console.log("Payment History: ", paymentHistory);
-  }, [paymentHistory]);
+    console.log("Billing History: ", billingHistory);
+  }, [paymentHistory, billingHistory]);
 
   const fetchPaymentHistory = async () => {
     setLoading(true);
@@ -43,9 +46,26 @@ const BillPaymentHistory2 = ({ route }) => {
     }
   };
 
+  const fetchBillingHistory = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://${serverIPV4}:3000/billing-history/bill/${billId}`
+      );
+      setBillingHistory(response.data);
+      setLoading(false);
+      setRefreshing(false);
+    } catch (error) {
+      console.error("Error retrieving billing history:", error);
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     if (billId) {
       fetchPaymentHistory();
+      fetchBillingHistory();
     }
   }, [billId]);
 
@@ -60,16 +80,35 @@ const BillPaymentHistory2 = ({ route }) => {
         if (!acc[monthYear]) {
           acc[monthYear] = [];
         }
-        acc[monthYear].push(item);
+        acc[monthYear].push({ ...item, type: "payment" });
         return acc;
       }, {});
-      setGroupedHistory(grouped);
+      setGroupedPaymentHistory(grouped);
     }
   }, [paymentHistory]);
+
+  useEffect(() => {
+    if (billingHistory.length) {
+      const grouped = billingHistory.reduce((acc, item) => {
+        const date = new Date(item.billingDate);
+        const monthYear = date.toLocaleString("en-GB", {
+          month: "long",
+          year: "numeric",
+        });
+        if (!acc[monthYear]) {
+          acc[monthYear] = [];
+        }
+        acc[monthYear].push({ ...item, type: "billing" });
+        return acc;
+      }, {});
+      setGroupedBillingHistory(grouped);
+    }
+  }, [billingHistory]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchPaymentHistory();
+    fetchBillingHistory();
   }, []);
 
   const back = () => {
@@ -77,7 +116,13 @@ const BillPaymentHistory2 = ({ route }) => {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.itemContainer} key={item._id}>
+    <TouchableOpacity
+      style={[
+        styles.itemContainer,
+        item.type === "billing" ? { marginLeft: 3 } : { marginRight: 3 },
+      ]}
+      key={item._id}
+    >
       <View>
         <Image
           source={{ uri: item.billingCompanyId.ImageURL }}
@@ -91,16 +136,23 @@ const BillPaymentHistory2 = ({ route }) => {
             : item.billId.accountNumber}
         </Text>
         <Text style={styles.itemText}>
-          {new Date(item.paymentDate).toLocaleDateString("en-GB")}
+          {new Date(item.paymentDate || item.billingDate).toLocaleDateString(
+            "en-GB"
+          )}
         </Text>
       </View>
       <View>
+        <Text style={item.type === "billing" ? styles.billingLabel : styles.paymentLabel}>
+          {item.type === "billing" ? "Bill Issued" : "Payment"}
+        </Text>
         <Text
           style={
-            item.status === "Completed" ? styles.itemText2 : styles.itemText3
+            item.type === "billing"
+              ? styles.billingAmount
+              : styles.paymentAmount
           }
         >
-          RM {item.paymentAmount}
+          RM {item.paymentAmount || item.billingAmount}
         </Text>
       </View>
     </TouchableOpacity>
@@ -128,16 +180,16 @@ const BillPaymentHistory2 = ({ route }) => {
           </TouchableOpacity>
         </View>
         <View style={styles.headerMidView}>
-          <Text style={styles.title}>Payment History</Text>
+          <Text style={styles.title}>Bill History</Text>
         </View>
         <View style={styles.headerRightView}>
           <TouchableOpacity>
-            <AntDesignIcon
+            {/* <AntDesignIcon
               style={styles.backIcon}
               name="filter"
               size={28}
               color="#000"
-            />
+            /> */}
           </TouchableOpacity>
         </View>
       </View>
@@ -148,19 +200,34 @@ const BillPaymentHistory2 = ({ route }) => {
           >
             <Text>Loading...</Text>
           </View>
-        ) : paymentHistory.length === 0 ? (
+        ) : paymentHistory.length === 0 && billingHistory.length === 0 ? (
           <View
-            style={{ justifyContent: "center", alignItems: "center", flex: 1, padding:20 }}
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              flex: 1,
+              padding: 20,
+            }}
           >
-            <Text>No payment history found.</Text>
+            <Text>No billing/payment history found.</Text>
             <Text>Start to make payment to view payment history.</Text>
           </View>
         ) : (
           <FlatList
-            data={Object.entries(groupedHistory).map(([monthYear, data]) => ({
-              monthYear,
-              data,
-            }))}
+            data={[
+              ...Object.entries(groupedPaymentHistory).map(
+                ([monthYear, data]) => ({
+                  monthYear,
+                  data,
+                })
+              ),
+              ...Object.entries(groupedBillingHistory).map(
+                ([monthYear, data]) => ({
+                  monthYear,
+                  data,
+                })
+              ),
+            ]}
             renderItem={renderMonthSection}
             keyExtractor={(item) => item.monthYear}
             refreshControl={
@@ -219,6 +286,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     margin: 10,
+    marginHorizontal: 30,
     borderRadius: 20,
     borderWidth: 1,
     backgroundColor: COLORS.background,
@@ -240,22 +308,32 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
   },
-  itemText2: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#108f10",
+  billingLabel:{
+    textAlign:"right",
+    color: COLORS.primary,
+    fontWeight:"bold"
   },
-  itemText3: {
+  paymentLabel:{
+    textAlign:"right",
+    color: "#108f10",
+    fontWeight:"bold"
+  },
+  billingAmount: {
     fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
+  },
+  paymentAmount: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#108f10",
   },
   monthText: {
     fontSize: 18,
     fontWeight: "bold",
     marginVertical: 10,
-    marginLeft: 10,
+    marginLeft: 15,
   },
 });
 
-export default BillPaymentHistory2;
+export default SingleBillPaymentHistory;

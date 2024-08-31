@@ -36,19 +36,6 @@ const HomeScreen = () => {
     }
   }, [user]);
 
-  const updateCredit = async (amount) => {
-    try {
-      const response = await axios.patch(
-        `http://${serverIPV4}:3000/users/${user._id}/credit`,
-        { amount }
-      );
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
   useEffect(() => {
     if (isFocused && user && user._id) {
       fetchBills(user._id);
@@ -61,15 +48,6 @@ const HomeScreen = () => {
 
   const reload = async () => {
     navigation.navigate("Reload");
-    // try {
-    //   const updatedUser = await updateCredit(parseFloat(100));
-    //   setUser(updatedUser);
-    //   Alert.alert("Success", "Credit reloaded successfully");
-    // } catch (error) {
-    //   const errorMessage =
-    //     error.response?.data?.message || error.message || "An error occurred";
-    //   Alert.alert("Error", errorMessage);
-    // }
   };
 
   // Pull To Refresh Bills

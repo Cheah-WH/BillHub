@@ -18,7 +18,7 @@ import { useAuth } from "../../backend/AuthContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const Payment = ({ route }) => {
-  const { bills } = useAuth();
+  const { bills, user } = useAuth();
   const [localBills, setLocalBills] = useState(bills);
   const [selectedBills, setSelectedBills] = useState([]);
   const [totalSelectedAmount, setTotalSelectedAmount] = useState(0);

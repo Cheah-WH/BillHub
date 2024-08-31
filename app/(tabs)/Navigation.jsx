@@ -10,7 +10,7 @@ import Home from "../screens/Home.jsx";
 import Notification from "../screens/Notification";
 import MyBills from "../screens/MyBills";
 import BillPaymentHistory from "../screens/BillPaymentHistory";
-import BillPaymentHistory2 from "../screens/BillPaymentHistory2";
+import SingleBillPaymentHistory from "../screens/SingleBillPaymentHistory";
 import AutoBilling from "../screens/AutoBilling";
 import BillPaymentAnalysis from "../screens/BillPaymentAnalysis";
 import BillingAnalysis from "../screens/BillingAnalysis";
@@ -24,6 +24,7 @@ import BillDetail from "../screens/BillDetail";
 import Payment from "../screens/Payment";
 import PaymentConfirmation from "../screens/PaymentConfirmation";
 import Reload from "../screens/Reload";
+import Receipt from "../screens/Receipt";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -106,8 +107,9 @@ export default function Navigation() {
       <Stack.Screen name="BillDetail" component={BillDetail} options={{ headerShown: false }}/>
       <Stack.Screen name="Payment" component={Payment} options={{ headerShown: false }}/>
       <Stack.Screen name="PaymentConfirmation" component={PaymentConfirmation} options={{ headerShown: false }}/>
-      <Stack.Screen name="BillPaymentHistory2" component={BillPaymentHistory2} options={{ headerShown: false }}/>
+      <Stack.Screen name="SingleBillPaymentHistory" component={SingleBillPaymentHistory} options={{ headerShown: false }}/>
       <Stack.Screen name="Reload" component={Reload} options={{ headerShown: false }}/>
+      <Stack.Screen name="Receipt" component={Receipt} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

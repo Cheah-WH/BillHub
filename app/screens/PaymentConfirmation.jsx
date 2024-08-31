@@ -14,12 +14,33 @@ import BillPaymentItemConfirmation from "../components/BillPaymentItemConfirmati
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
+import { useStripe } from "@stripe/stripe-react-native";
 
 const PaymentConfirmation = ({ route }) => {
   const { selectedBillData } = route.params;
   const [paymentMethod, setPaymentMethod] = React.useState("BillHub Credit");
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+
+  const createPaymentIntent = async (amount) => {
+    try {
+      const response = await axios.post(
+        `http://${serverIPV4}:3000/payments/intents`,
+        {
+          amount: amount, // amount in cents, e.g., 123 for RM 1.23
+        }
+      );
+
+      // The client_secret is needed for Stripe payment confirmation
+      const clientSecret = response.data.paymentIntent;
+
+      return clientSecret;
+    } catch (error) {
+      console.error("Error creating payment intent:", error.message);
+      Alert.alert("Payment Error", error.message);
+    }
+  };
 
   const back = () => {
     navigation.goBack();
@@ -31,6 +52,49 @@ const PaymentConfirmation = ({ route }) => {
   );
 
   const handlePay = async () => {
+    // Check credit if BillHub Credit is used
+    if (paymentMethod == "BillHub Credit") {
+      if (totalAmount > user.credit) {
+        Alert.alert(
+          "Insufficient Credit, please reload first or use other payment method"
+        );
+        return;
+      }
+    }
+
+    if (paymentMethod !== "BillHub Credit") {
+      // 1. Create payment Intent
+      const response = await createPaymentIntent(Math.floor(totalAmount * 100));
+      console.log("response: ", response);
+      if (response.error) {
+        console.log("Step 1 Error: ", response.error);
+        return;
+      }
+
+      // 2. Intialize payment sheet
+      const initResponse = await initPaymentSheet({
+        merchantDisplayName: "BillHub",
+        paymentIntentClientSecret: response,
+        paymentMethodTypes: ["card", "fpx"],
+        defaultBillingDetails: {
+          address: {
+            country: "MY", // ISO 3166-1 alpha-2 country code (e.g., 'MY' for Malaysia)
+          },
+        },
+      });
+      if (initResponse.error) {
+        console.log("Step 2 Error: ", initResponse.error);
+        return;
+      }
+
+      // 3. Present Payment Page from Stripe
+      const paymentResponse = await presentPaymentSheet();
+      if (paymentResponse.error) {
+        console.log("Step 3 error: ", paymentResponse.error);
+        return;
+      }
+    } // May consider BillHub Credit's password for transaction 
+
     try {
       const dateTime = Date.now();
       const paymentHistories = selectedBillData.map((bill) => ({
@@ -55,11 +119,21 @@ const PaymentConfirmation = ({ route }) => {
       );
 
       if (response.status === 201) {
-        Alert.alert("Success", "Payment histories saved successfully.");
-        // Navigate to another screen or perform any other actions as needed
+        if (paymentMethod == "BillHub Credit") {
+          try {
+            await axios.patch(
+              `http://${serverIPV4}:3000/users/${user._id}/deduct`,
+              { totalAmount }
+            );
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
+        }
       } else {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+      navigation.navigate("Receipt", { paymentHistories, totalAmount });
     } catch (error) {
       console.error("Error saving payment histories:", error);
       Alert.alert("Error", "Failed to save payment histories.");
@@ -87,7 +161,9 @@ const PaymentConfirmation = ({ route }) => {
         <View style={styles.bodyTop}>
           <FlatList
             data={selectedBillData}
-            renderItem={({ item }) => <BillPaymentItemConfirmation bill={item} />}
+            renderItem={({ item }) => (
+              <BillPaymentItemConfirmation bill={item} />
+            )}
             keyExtractor={(item) => item._id.toString()}
           />
         </View>
@@ -104,12 +180,13 @@ const PaymentConfirmation = ({ route }) => {
             <Picker
               selectedValue={paymentMethod}
               onValueChange={(itemValue) => setPaymentMethod(itemValue)}
+              prompt="Select a Payment Method"
               style={styles.picker}
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="BillHub Credit" value="BillHub Credit" />
               <Picker.Item label="Online Banking" value="Online Banking" />
               <Picker.Item label="Debit Card" value="Debit" />
-              <Picker.Item label="TnG eWallet" value="TNG" />
             </Picker>
           </View>
           <View style={styles.bottomRow4}>
@@ -217,6 +294,10 @@ const styles = StyleSheet.create({
     height: 4,
     width: 280,
     backgroundColor: COLORS.greyBackground,
+  },
+  pickerItem: {
+    borderColor: "#000",
+    borderBottomWidth: 1,
   },
   payButton: {
     backgroundColor: COLORS.primary,

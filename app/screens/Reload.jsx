@@ -14,11 +14,13 @@ import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useStripe } from "@stripe/stripe-react-native";
+import { useAuth } from "../../backend/AuthContext";
 import axios from "axios";
 
 const ReloadPage = () => {
-  const [amount, setAmount] = useState(2);
+  const [amount, setAmount] = useState();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { user, setUser } = useAuth();
 
   const navigation = useNavigation();
 
@@ -46,9 +48,16 @@ const ReloadPage = () => {
   };
 
   const onReload = async () => {
-    console.log("ON RELOAD");
+    if (!amount) {
+      Alert.alert("Please enter or select a reload amount");
+      return;
+    }
+    if (amount < 10) {
+      Alert.alert("Reload amount must be at least RM10");
+      return;
+    }
+
     // 1. Create payment Intent
-    console.log("Step 1");
     const response = await createPaymentIntent(Math.floor(amount * 100));
     console.log("response: ", response);
     if (response.error) {
@@ -80,7 +89,28 @@ const ReloadPage = () => {
     }
 
     // 4. Handle Payment Result
-    console.log("The payment has succesful");
+     try {
+      const updatedUser = await updateCredit(parseFloat(amount));
+      setUser(updatedUser);
+      Alert.alert("Success", "Credit reloaded successfully");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      Alert.alert("Error", errorMessage);
+    }
+  };
+
+  const updateCredit = async (amount) => {
+    try {
+      const response = await axios.patch(
+        `http://${serverIPV4}:3000/users/${user._id}/credit`,
+        { amount }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
   return (
@@ -134,7 +164,7 @@ const ReloadPage = () => {
         <View style={styles.noteView}>
           <Text style={styles.noteTextBold}>Note : </Text>
           <Text style={styles.noteText}>
-           To ensure smooth auto-billing process, make sure your account is
+            To ensure smooth auto-billing process, make sure your account is
             having sufficient credits
           </Text>
         </View>
@@ -215,21 +245,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
     color: "#555",
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
-  noteView:{
+  noteView: {
     marginTop: 20,
-    flexDirection:"row",
-    justifyContent:"flex-start"
+    flexDirection: "row",
+    justifyContent: "flex-start",
   },
-  noteTextBold:{
-    fontWeight:"bold",
+  noteTextBold: {
+    fontWeight: "bold",
     fontSize: 14,
   },
   noteText: {
     fontSize: 14,
-    textAlign:"left",
-    width:300,
+    textAlign: "left",
+    width: 300,
   },
   footerText: {
     fontSize: 16,

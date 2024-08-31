@@ -32,7 +32,8 @@ const BillPaymentHistory = () => {
       const response = await axios.get(
         `http://${serverIPV4}:3000/payment-history/${user._id}`
       );
-      setPaymentHistory(response.data);
+      const sortedHistory = response.data.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+      setPaymentHistory(sortedHistory);
       setLoading(false);
       setRefreshing(false);
     } catch (error) {

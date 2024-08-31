@@ -4,6 +4,7 @@ const billController = require('../controllers/billController');
 
 router.post('/', billController.registerBill);
 router.get('/:userId', billController.getBillsByUserId);
+router.get('/billId/:billId', billController.getBillsByBillId);
 router.patch('/:id', billController.updateBill);
 router.patch('/:id/nickname', billController.updateBillNickname);
 router.delete('/:id', billController.deleteBill);
