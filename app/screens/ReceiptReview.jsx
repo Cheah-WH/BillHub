@@ -14,86 +14,54 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
 
-const Receipt = ({ route }) => {
-  const { paymentHistories, totalAmount } = route.params;
+const ReceiptReview = ({ route }) => {
+  const { receiptId } = route.params;
   const { user, bills, fetchUserData } = useAuth();
   const navigation = useNavigation();
-  const [billingDetails, setBillingDetails] = useState({});
-
-  console.log("paymentHistories:", paymentHistories);
-  console.log("Bills: ", bills);
+  const [receiptData, setReceiptData] = useState(null);
 
   useEffect(() => {
-    if (bills && paymentHistories) fillInBillingDetails();
-
-    //Prepare Data to be stored
-    const receiptData = {
-      userId: user._id,
-      paymentHistories: paymentHistories.map(payment => ({
-        billId: payment.billId,
-        paymentAmount: payment.paymentAmount,
-      })),
-      totalAmount: totalAmount,
-      paymentDate: paymentHistories[0].paymentDate,
-      paymentMethod: paymentHistories[0].paymentMethod,
-      transactionId: paymentHistories[0].transactionId,
-    };
-    saveReceipt(receiptData);
-
-  }, [bills]);
-
-  const fillInBillingDetails = async () => {
-    const details = {};
-    for (const payment of paymentHistories) {
-      const bill = bills.find((bill) => bill._id === payment.billId);
-      if (bill) {
-        details[payment.billId] = {
-          billingCompanyImage: bill.company.ImageURL,
-          nickname: bill.nickname,
-          accountNumber: bill.accountNumber,
-        };
+    const fetchReceipt = async () => {
+      try {
+        const response = await axios.get(
+          `http://${serverIPV4}:3000/receipt/${receiptId}`
+        );
+        setReceiptData(response.data);
+    
+      } catch (error) {
+        console.error("Error fetching receipt data:", error);
       }
-    }
-    setBillingDetails(details);
-  };
-
-  useEffect(() => {
-    console.log("Billing Details:", billingDetails);
-  }, [billingDetails]);
-
-  console.log("paymentHistories:", paymentHistories);
+    };
+    fetchReceipt();
+  }, [receiptId, bills]);
 
   const handleBackToHome = () => {
-    fetchUserData(user._id);
+    navigation.goBack();
   };
 
-  const formatDateAndTime = (dateString) => {
-    const date = new Date(dateString);
+  if (!receiptData) {
+    return (
+      <View style={styles.loadingView}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text>Loading receipt data...</Text>
+      </View>
+    );
+  }
 
-    const dateOptions = {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    };
+  const {
+    paymentHistories,
+    totalAmount,
+    paymentDate,
+    paymentMethod,
+    transactionId,
+  } = receiptData;
+  const { formattedDate, formattedTime } = formatDateAndTime(paymentDate);
 
-    const formattedDate = date.toLocaleDateString("en-GB", dateOptions);
-    const formattedTime = date.toLocaleTimeString();
-
-    return { formattedDate, formattedTime };
+  const getImageURL = (accountNumber) => {
+    const bill = bills.find(bill => bill.accountNumber === accountNumber);
+    return bill ? bill.company.ImageURL : null;
   };
 
-  const { formattedDate, formattedTime } = formatDateAndTime(
-    paymentHistories[0].paymentDate
-  );
-
-  const saveReceipt = async (receiptData) => {
-    try {
-      const response = await axios.post(`http://${serverIPV4}:3000/receipt`, receiptData);
-      console.log("Receipt saved successfully:", response.data);
-    } catch (error) {
-      console.error("Error saving receipt:", error);
-    }
-  };
 
   return (
     <View style={styles.screenView}>
@@ -108,7 +76,7 @@ const Receipt = ({ route }) => {
           />
         </View>
         <View style={styles.headerMidView}>
-          <Text style={styles.title}>Payment Receipt</Text>
+          <Text style={styles.title}>Payment Receipt Review</Text>
         </View>
         <View style={styles.headerRightView}></View>
       </View>
@@ -124,16 +92,12 @@ const Receipt = ({ route }) => {
           <View style={styles.infoRow}>
             <Text style={styles.labelText}>Transaction ID:</Text>
             <View style={{ width: 150, justifyContent: "flex-end" }}>
-              <Text style={styles.infoText}>
-                {paymentHistories[0].transactionId}
-              </Text>
+              <Text style={styles.infoText}>{transactionId}</Text>
             </View>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.labelText}>Payment Method:</Text>
-            <Text style={styles.infoText}>
-              {paymentHistories[0].paymentMethod}
-            </Text>
+            <Text style={styles.infoText}>{paymentMethod}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.labelText}>Payment Date:</Text>
@@ -147,19 +111,18 @@ const Receipt = ({ route }) => {
         <FlatList
           data={paymentHistories}
           renderItem={({ item }) => {
-            const billDetails = billingDetails[item.billId];
-            return billDetails ? (
+            return item.paymentAmount ? (
               <View style={styles.billItem}>
                 <Image
-                  source={{ uri: billDetails.billingCompanyImage }}
+                  source={{ uri: getImageURL(item.billId.accountNumber) }}
                   style={styles.companyImage}
                 />
                 <View style={styles.billDetails}>
                   <View>
-                    <Text style={styles.billText}>{billDetails.nickname}</Text>
-                    {billDetails.nickname != billDetails.accountNumber && (
+                    <Text style={styles.billText}>{item.billId.nickname}</Text>
+                    {item.billId.nickname !== item.billId.accountNumber && (
                       <Text style={styles.billText}>
-                        {billDetails.accountNumber}
+                        {item.billId.accountNumber}
                       </Text>
                     )}
                   </View>
@@ -176,7 +139,7 @@ const Receipt = ({ route }) => {
               </View>
             );
           }}
-          keyExtractor={(item) => item.billId.toString()}
+          keyExtractor={(item) => item._id.toString()+item.billId._id.toString()}
         />
       </View>
       <View style={styles.footer}>
@@ -191,6 +154,21 @@ const Receipt = ({ route }) => {
       </View>
     </View>
   );
+};
+
+const formatDateAndTime = (dateString) => {
+  const date = new Date(dateString);
+
+  const dateOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  };
+
+  const formattedDate = date.toLocaleDateString("en-GB", dateOptions);
+  const formattedTime = date.toLocaleTimeString();
+
+  return { formattedDate, formattedTime };
 };
 
 const styles = StyleSheet.create({
@@ -239,7 +217,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     zIndex: 1,
     margin: 10,
-    marginTop:15,
+    marginTop: 15,
   },
   receiptInfo: {
     marginBottom: 20,
@@ -318,4 +296,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Receipt;
+export default ReceiptReview;

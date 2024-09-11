@@ -130,10 +130,17 @@ const SingleBillPaymentHistory = ({ route }) => {
         />
       </View>
       <View style={styles.itemDetails}>
+        <Text style={{ fontSize: 11, color: "grey", fontWeight: "bold" }}>
+          Name
+        </Text>
         <Text style={styles.itemText}>
           {item.billId.nickname
             ? item.billId.nickname
             : item.billId.accountNumber}
+        </Text>
+
+        <Text style={{ fontSize: 11, color: "grey", fontWeight: "bold" }}>
+          Date
         </Text>
         <Text style={styles.itemText}>
           {new Date(item.paymentDate || item.billingDate).toLocaleDateString(
@@ -142,7 +149,11 @@ const SingleBillPaymentHistory = ({ route }) => {
         </Text>
       </View>
       <View>
-        <Text style={item.type === "billing" ? styles.billingLabel : styles.paymentLabel}>
+        <Text
+          style={
+            item.type === "billing" ? styles.billingLabel : styles.paymentLabel
+          }
+        >
           {item.type === "billing" ? "Bill Issued" : "Payment"}
         </Text>
         <Text
@@ -308,15 +319,15 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
   },
-  billingLabel:{
-    textAlign:"right",
+  billingLabel: {
+    textAlign: "right",
     color: COLORS.primary,
-    fontWeight:"bold"
+    fontWeight: "bold",
   },
-  paymentLabel:{
-    textAlign:"right",
+  paymentLabel: {
+    textAlign: "right",
     color: "#108f10",
-    fontWeight:"bold"
+    fontWeight: "bold",
   },
   billingAmount: {
     fontSize: 16,

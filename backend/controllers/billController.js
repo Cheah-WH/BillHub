@@ -55,6 +55,8 @@ exports.getBillsByBillId = async (req, res) => {
 };
 
 // Bill Information Update (Third Party - Billing Company)
+// Check if Reminder has to be sent or schedule
+// Check if Auto-billing has to be run or schedule
 exports.updateBill = async (req, res) => {
   try {
     const updatedBill = await Bill.findByIdAndUpdate(req.params.id, req.body, {

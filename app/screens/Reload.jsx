@@ -213,11 +213,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.greyBackground,
   },
   footer: {
-    paddingVertical: 10,
     paddingHorizontal: 20,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.greyBackground,
+    paddingBottom:25,
   },
   reloadButton: {
     justifyContent: "center",

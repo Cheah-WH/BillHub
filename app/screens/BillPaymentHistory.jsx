@@ -22,17 +22,15 @@ const BillPaymentHistory = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    console.log("Payment History: ", paymentHistory);
-  }, [paymentHistory]);
-
   const fetchPaymentHistory = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
         `http://${serverIPV4}:3000/payment-history/${user._id}`
       );
-      const sortedHistory = response.data.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+      const sortedHistory = response.data.sort(
+        (a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)
+      );
       setPaymentHistory(sortedHistory);
       setLoading(false);
       setRefreshing(false);
@@ -44,8 +42,9 @@ const BillPaymentHistory = () => {
   };
 
   useEffect(() => {
-    console.log("User id: ", user._id)
-    fetchPaymentHistory();
+    if (user) {
+      fetchPaymentHistory();
+    }
   }, [user]);
 
   useEffect(() => {
@@ -75,35 +74,47 @@ const BillPaymentHistory = () => {
     navigation.goBack();
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.itemContainer} key={item._id}>
-      <View>
-        <Image
-          source={{ uri: item.billingCompanyId.ImageURL }}
-          style={styles.companyImage}
-        />
-      </View>
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemText}>
-          {item.billId.nickname
-            ? item.billId.nickname
-            : item.billId.accountNumber}
-        </Text>
-        <Text style={styles.itemText}>
-          {new Date(item.paymentDate).toLocaleDateString("en-GB")}
-        </Text>
-      </View>
-      <View>
-        <Text
-          style={
-            item.status === "Completed" ? styles.itemText2 : styles.itemText3
-          }
-        >
-          RM {item.paymentAmount}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={styles.itemContainer}
+        key={item._id}
+        onPress={() => {
+          navigation.navigate("ReceiptReview", {
+            receiptId: item.transactionId,
+          });
+        }}
+      >
+        <View>
+          <Image
+            source={{ uri: item.billingCompanyId.ImageURL }}
+            style={styles.companyImage}
+          />
+        </View>
+        <View style={styles.itemDetails}>
+        <Text style={{ fontSize:11, color:"grey", fontWeight:"bold"}}>Name</Text>
+          <Text style={styles.itemText}>
+            {item.billId.nickname
+              ? item.billId.nickname
+              : item.billId.accountNumber}
+          </Text>
+          <Text style={{ fontSize:11, color:"grey",  fontWeight:"bold"}}>Payment Date</Text>
+          <Text style={styles.itemText}>
+            {new Date(item.paymentDate).toLocaleDateString("en-GB")}
+          </Text>
+        </View>
+        <View>
+          <Text
+            style={
+              item.status === "Completed" ? styles.itemText2 : styles.itemText3
+            }
+          >
+            RM {item.paymentAmount}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderMonthSection = ({ item }) => (
     <View key={item.monthYear}>
@@ -195,7 +206,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     paddingHorizontal: 0,
     flex: 15,
-    marginBottom:15,
+    marginBottom: 15,
   },
   backIcon: {
     textShadowColor: "#000",

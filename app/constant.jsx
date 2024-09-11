@@ -19,6 +19,6 @@ export const COLORS = {
     },
   };
   
-  export const serverIPV4 = "192.168.0.11"; //Change according to server device's IPV4 address
+  export const serverIPV4 = "192.168.68.109"; //Change according to server device's IPV4 address
 
   

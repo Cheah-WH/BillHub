@@ -319,6 +319,10 @@ const Notification = () => {
         visible={confirmDeleteModalVisible}
         onRequestClose={() => setConfirmDeleteModalVisible(false)}
       >
+        <StatusBar
+          backgroundColor="rgba(0, 0, 0, 0.5)"
+          barStyle="light-content"
+        />
         <View style={styles.modalView}>
           <View style={styles.confirmDeleteModalContent}>
             <Text style={styles.confirmDeleteText}>
@@ -395,7 +399,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingRight: 15,
     backgroundColor: COLORS.greyBackground,
-    height:90,
+    height: 90,
   },
   leftView: {
     alignItems: "center",

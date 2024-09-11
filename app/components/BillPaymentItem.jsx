@@ -71,11 +71,12 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
       );
       return;
     }
-    bill.paymentAmount = amount;
-    onPaymentAmountChange(bill._id, amount); //Pass to the parent component when amount changed
+    // Pass the updated amount to the parent component
+    onPaymentAmountChange(bill._id, amount);
     setIsModalVisible(false);
     setNewPaymentAmount("");
   };
+  
 
   return (
     <View style={styles.container}>

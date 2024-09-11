@@ -25,6 +25,7 @@ import Payment from "../screens/Payment";
 import PaymentConfirmation from "../screens/PaymentConfirmation";
 import Reload from "../screens/Reload";
 import Receipt from "../screens/Receipt";
+import ReceiptReview from "../screens/ReceiptReview";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -110,6 +111,7 @@ export default function Navigation() {
       <Stack.Screen name="SingleBillPaymentHistory" component={SingleBillPaymentHistory} options={{ headerShown: false }}/>
       <Stack.Screen name="Reload" component={Reload} options={{ headerShown: false }}/>
       <Stack.Screen name="Receipt" component={Receipt} options={{ headerShown: false }}/>
+      <Stack.Screen name="ReceiptReview" component={ReceiptReview} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

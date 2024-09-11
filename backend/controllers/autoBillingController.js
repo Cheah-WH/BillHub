@@ -1,4 +1,3 @@
-// controllers/autoBillingController.js
 
 const AutoBilling = require("../models/models/AutoBilling");
 

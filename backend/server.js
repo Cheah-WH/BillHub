@@ -17,14 +17,15 @@ const { sendEmail } = require("./emailService");
 // const Notification = require("./models/models/Notification");
 
 // Import Routes
-const userRoutes = require('./routes/userRoutes');
-const billingCompanyRoutes = require('./routes/billingCompanyRoutes');
-const billRoutes = require('./routes/billRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const paymentHistoryRoutes = require('./routes/paymentHistoryRoutes');
-const autoBillingRoutes = require('./routes/autoBillingRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const billingHistoryRoutes = require('./routes/billingHistoryRoutes');
+const userRoutes = require("./routes/userRoutes");
+const billingCompanyRoutes = require("./routes/billingCompanyRoutes");
+const billRoutes = require("./routes/billRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const paymentHistoryRoutes = require("./routes/paymentHistoryRoutes");
+const autoBillingRoutes = require("./routes/autoBillingRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const billingHistoryRoutes = require("./routes/billingHistoryRoutes");
+const receiptRoutes = require("./routes/receiptRoutes");
 
 // Middleware
 app.use(express.json());
@@ -54,14 +55,15 @@ db.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
-app.use('/users', userRoutes);
-app.use('/billing-companies', billingCompanyRoutes);
-app.use('/bills', billRoutes);
-app.use('/notifications', notificationRoutes);
-app.use('/payment-history', paymentHistoryRoutes);
-app.use('/auto-billing', autoBillingRoutes);
-app.use('/payments',paymentRoutes);
-app.use('/billing-history', billingHistoryRoutes);
+app.use("/users", userRoutes);
+app.use("/billing-companies", billingCompanyRoutes);
+app.use("/bills", billRoutes);
+app.use("/notifications", notificationRoutes);
+app.use("/payment-history", paymentHistoryRoutes);
+app.use("/auto-billing", autoBillingRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/billing-history", billingHistoryRoutes);
+app.use("/receipt", receiptRoutes);
 
 // Trigger job scheduling for reminders
 app.post("/schedule-reminders", async (req, res) => {
@@ -72,8 +74,6 @@ app.post("/schedule-reminders", async (req, res) => {
     console.log("Error scheduling reminders: ", err);
   }
 });
-
-
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);

@@ -47,13 +47,13 @@ const Payment = ({ route }) => {
   };
 
   const calculateTotalAmount = (bills, selectedBills) => {
-    const total = bills
-      .filter((bill) => selectedBills.includes(bill._id))
-      .reduce(
-        (total, bill) =>
-          total + (bill.paymentAmount || bill.outStandingAmount || 0),
-        0
-      );
+    const total = bills.reduce((sum, bill) => {
+      if (selectedBills.includes(bill._id)) {
+        const amount = bill.paymentAmount || bill.outStandingAmount || 0;
+        return sum + amount;
+      }
+      return sum;
+    }, 0);
     setTotalSelectedAmount(total);
   };
 
@@ -115,12 +115,10 @@ const Payment = ({ route }) => {
       </View>
       <View style={styles.body}>
         <View style={styles.bodyTop}>
-        <KeyboardAvoidingView behavior="padding">
-          <FlatList
-            data={localBills}
-            keyExtractor={(bill) => bill._id}
-            renderItem={({ item }) => (
+          <KeyboardAwareScrollView>
+            {localBills.map((item) => (
               <View
+                key={item._id} // The key should be unique for each item
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -146,9 +144,8 @@ const Payment = ({ route }) => {
                   )}
                 </View>
               </View>
-            )}
-          />
-          </KeyboardAvoidingView>
+            ))}
+          </KeyboardAwareScrollView>
         </View>
         <View style={styles.bodyMiddle}></View>
         <View style={styles.bodyBottom}>
