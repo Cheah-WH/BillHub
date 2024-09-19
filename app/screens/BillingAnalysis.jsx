@@ -146,7 +146,7 @@ const BillingAnalysis = () => {
         <View style={styles.headerRightView}>
           <AntDesignIcon
             style={styles.backIcon}
-            name="wallet"
+            name="swap"
             size={28}
             color="#000"
             onPress={()=>{navigation.navigate("BillPaymentAnalysis")}}

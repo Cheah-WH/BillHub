@@ -21,7 +21,6 @@ const SingleBillPaymentHistory = ({ route }) => {
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [billingHistory, setBillingHistory] = useState([]);
   const [groupedPaymentHistory, setGroupedPaymentHistory] = useState({});
-  const [groupedBillingHistory, setGroupedBillingHistory] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -70,40 +69,38 @@ const SingleBillPaymentHistory = ({ route }) => {
   }, [billId]);
 
   useEffect(() => {
-    if (paymentHistory.length) {
-      const grouped = paymentHistory.reduce((acc, item) => {
-        const date = new Date(item.paymentDate);
-        const monthYear = date.toLocaleString("en-GB", {
-          month: "long",
-          year: "numeric",
-        });
-        if (!acc[monthYear]) {
-          acc[monthYear] = [];
-        }
-        acc[monthYear].push({ ...item, type: "payment" });
-        return acc;
-      }, {});
-      setGroupedPaymentHistory(grouped);
-    }
-  }, [paymentHistory]);
+    if (paymentHistory.length && billingHistory.length) {
+      const combinedHistory = [
+        ...paymentHistory.map((item) => ({
+          ...item,
+          date: new Date(item.paymentDate),
+          type: "payment",
+        })),
+        ...billingHistory.map((item) => ({
+          ...item,
+          date: new Date(item.billingDate),
+          type: "billing",
+        })),
+      ];
 
-  useEffect(() => {
-    if (billingHistory.length) {
-      const grouped = billingHistory.reduce((acc, item) => {
-        const date = new Date(item.billingDate);
-        const monthYear = date.toLocaleString("en-GB", {
+      // Sort the combined history by date in descending order (nearest date first)
+      combinedHistory.sort((a, b) => b.date - a.date);
+
+      const groupedCombinedHistory = combinedHistory.reduce((acc, item) => {
+        const monthYear = item.date.toLocaleString("en-GB", {
           month: "long",
           year: "numeric",
         });
         if (!acc[monthYear]) {
           acc[monthYear] = [];
         }
-        acc[monthYear].push({ ...item, type: "billing" });
+        acc[monthYear].push(item);
         return acc;
       }, {});
-      setGroupedBillingHistory(grouped);
+
+      setGroupedPaymentHistory(groupedCombinedHistory);
     }
-  }, [billingHistory]);
+  }, [paymentHistory, billingHistory]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -225,20 +222,12 @@ const SingleBillPaymentHistory = ({ route }) => {
           </View>
         ) : (
           <FlatList
-            data={[
-              ...Object.entries(groupedPaymentHistory).map(
-                ([monthYear, data]) => ({
-                  monthYear,
-                  data,
-                })
-              ),
-              ...Object.entries(groupedBillingHistory).map(
-                ([monthYear, data]) => ({
-                  monthYear,
-                  data,
-                })
-              ),
-            ]}
+            data={Object.entries(groupedPaymentHistory).map(
+              ([monthYear, data]) => ({
+                monthYear,
+                data,
+              })
+            )}
             renderItem={renderMonthSection}
             keyExtractor={(item) => item.monthYear}
             refreshControl={
@@ -340,10 +329,11 @@ const styles = StyleSheet.create({
     color: "#108f10",
   },
   monthText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginVertical: 10,
-    marginLeft: 15,
+    backgroundColor: COLORS.lightGrey,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
 });
 

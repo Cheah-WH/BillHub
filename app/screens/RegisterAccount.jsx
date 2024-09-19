@@ -7,7 +7,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Keyboard,
   ScrollView,
 } from "react-native";
 import { COLORS, FONTS, serverIPV4 } from "../constant";
@@ -15,6 +15,8 @@ import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
 import PasswordCriteria from "../components/PasswordCriteria";
+import OTPInput from "../components/RegisterAccount/OTPInput";
+import CustomAlert from "../components/CustomAlert";
 
 // Section Components
 // Section 1
@@ -46,14 +48,7 @@ const EnterOTP = ({ setSection }) => {
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Verification</Text>
       <Text>Enter Your 6 digits OTP sent to your phone number{"\n"}</Text>
-      <TextInput
-        value={otp}
-        onChangeText={setOtp}
-        placeholder="OTP"
-        style={styles.input}
-        maxLength={6}
-        keyboardType="number-pad"
-      />
+      <OTPInput otp={otp} setOtp={setOtp} />
       <TouchableOpacity
         style={styles.resendButton}
         onPress={() => setCounter(180)}
@@ -85,7 +80,7 @@ const SetupAccount = ({
   email,
   setEmail,
 }) => (
-  <ScrollView>
+  <ScrollView style={{height:400}}>
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Setup Account</Text>
       <TextInput
@@ -97,15 +92,9 @@ const SetupAccount = ({
       <TextInput
         value={id}
         onChangeText={setId}
-        placeholder="NRIC Number"
+        placeholder="NRIC (Example: 010203101234)"
         style={styles.input}
         keyboardType="number-pad"
-      />
-      <TextInput
-        value={birthday}
-        onChangeText={setBirthday}
-        placeholder="Birthday"
-        style={styles.input}
       />
       <TextInput
         value={email}
@@ -239,6 +228,38 @@ const RegisterAccount = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // Custom Alert
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
+  };
+
+  useEffect(() => {
+    // Add event listeners to detect keyboard show and hide
+    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () =>
+      setIsKeyboardVisible(true)
+    );
+    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () =>
+      setIsKeyboardVisible(false)
+    );
+
+    return () => {
+      // Remove event listeners when component unmounts
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const back = () => {
     navigation.goBack();
@@ -267,48 +288,75 @@ const RegisterAccount = () => {
 
   const handleNext = async () => {
     if (section === 1 && !isValidPhoneNumber(phoneNumber)) {
-      Alert.alert("Invalid Phone Number", "Please enter a valid phone number.");
+      setAlertTitle("Invalid Phone Number");
+      setAlertMessage(
+        "Please enter a valid phone number according to the sample format"
+      );
+      setAlertVisible(true);
+      setAlertCloseAction(null);
       return;
     }
     if (section === 3) {
-      if (!name || !id || !birthday || !email) {
-        Alert.alert("Incomplete Form", "Please fill in all fields.");
+      if (!name || !id || !email) {
+        setAlertTitle("Incomplete Form");
+        setAlertMessage("Please fill in all fields");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
       if (!isValidID(id)) {
-        Alert.alert("Invalid ID", "Please enter a valid NRIC number.");
+        setAlertTitle("Invalid ID");
+        setAlertMessage("Please enter a valid NRIC number without '-'");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
       if (!isValidEmail(email)) {
-        Alert.alert("Invalid Email", "Please enter a valid email address.");
+        setAlertTitle("Invalid Email");
+        setAlertMessage("Please enter an valid email address");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
     } else if (section === 4) {
       if (!verificationCode) {
-        Alert.alert(
-          "Verification Code Required",
-          "Please enter the verification code."
-        );
+        setAlertTitle("Verification Code Required");
+        setAlertMessage("Please enter the verification code received");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
       if (verificationCode !== emailOTP) {
-        Alert.alert("Verification Code does not match", "Please try again.");
+        setAlertTitle("Not Match");
+        setAlertMessage("Verification code does not match, please try again");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
     } else if (section === 5) {
       if (!password || !confirmPassword) {
-        Alert.alert("Incomplete Form", "Please fill in all fields.");
+        setAlertTitle("Incomplete Form");
+        setAlertMessage("Please fill in all fields");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
       if (password !== confirmPassword) {
-        Alert.alert("Password Mismatch", "Passwords do not match.");
+        setAlertTitle("Password Mismatch");
+        setAlertMessage(
+          "Passwords do not match, please ensure both passwords are the same"
+        );
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
       if (!isValidPassword(password)) {
-        Alert.alert(
-          "Invalid Password",
+        setAlertTitle("Invalid Password");
+        setAlertMessage(
           "Password must be at least 8 characters long and contain a combination of capital letter, small letter, symbol (@$!%*?&#_), and number."
         );
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
       // Register User Account
@@ -324,35 +372,43 @@ const RegisterAccount = () => {
           }
         );
         if (response.status === 201) {
-          Alert.alert(
-            "Registration Successful",
-            "Your account has been registered successfully."
-          );
-          console.log("Response: ",response)
-          await axios.post(
-            `http://${serverIPV4}:3000/notifications`,
-            {
-              userId: response.data.user._id,
-              message:`Your account is succesfully registered with email ${email}, you may start using the application by registering a bill`
-            }
-          );
-          navigation.navigate("Login");
+          setAlertTitle("Registration Succesful");
+          setAlertMessage("Your account has been registered successfully");
+          setAlertVisible(true);
+          setAlertCloseAction(() => () => navigation.navigate("Login"));
+          console.log("Response: ", response);
+          await axios.post(`http://${serverIPV4}:3000/notifications`, {
+            userId: response.data.user._id,
+            message: `Your account is succesfully registered with email ${email}, you may start using the application by registering a bill`,
+          });
         }
       } catch (error) {
         if (error.response) {
           // Server responded with a status other than 200 range
           if (error.response.status === 400) {
             // User already exists
-            Alert.alert("Registration Failed", error.response.data.message);
+            setAlertTitle("Registration Failed");
+            setAlertMessage("User already registered");
+            setAlertVisible(true);
+            setAlertCloseAction(null);
           } else {
-            Alert.alert("Error", error.response.data.message);
+            setAlertTitle("Error");
+            setAlertMessage(error.response.data.message);
+            setAlertVisible(true);
+            setAlertCloseAction(null);
           }
         } else if (error.request) {
           // Request was made but no response was received
-          Alert.alert("Error", "No response received from the server");
+          setAlertTitle("Error");
+          setAlertMessage("No response received from server");
+          setAlertVisible(true);
+          setAlertCloseAction(null);
         } else {
           // Something happened in setting up the request that triggered an error
-          Alert.alert("Error", "Error in setting up request: " + error.message);
+          setAlertTitle("Error");
+          setAlertMessage("Error in setting up request");
+          setAlertVisible(true);
+          setAlertCloseAction(null);
         }
       }
       return;
@@ -377,7 +433,7 @@ const RegisterAccount = () => {
         `For checking purpose: The emailOTP that will be send in email is ${emailOTP}`
       );
 
-      const sendEmail = async () => { 
+      const sendEmail = async () => {
         const emailData = {
           to: email,
           subject: "BillHub Email Verification",
@@ -390,31 +446,38 @@ const RegisterAccount = () => {
             `http://${serverIPV4}:3000/send-email`,
             emailData
           );
-          Alert.alert("Email Sent", "Please check your email for OTP.");
+          setAlertTitle("OTP Sent");
+          setAlertMessage("Please check your email for OTP");
+          setAlertVisible(true);
+          setAlertCloseAction(null);
         } catch (error) {
           if (error.response) {
             console.error(
               "Server responded with non-2xx status:",
               error.response.data
             );
-            Alert.alert(
-              "Error",
-              "Failed to send email. Please try again later."
-            );
+            setAlertTitle("Error");
+            setAlertMessage("Failed to send email. Please try again later.");
+            setAlertVisible(true);
+            setAlertCloseAction(null);
           } else if (error.request) {
             console.error("No response received:", error.request);
-            Alert.alert(
-              "Error",
+            setAlertTitle("Error");
+            setAlertMessage(
               "No response received from server. Please try again later."
             );
+            setAlertVisible(true);
+            setAlertCloseAction(null);
           } else {
             console.error("Error setting up request:", error.message);
-            Alert.alert(
-              "Error",
-              "Failed to send email. Please check your network connection."
+            setAlertTitle("Error");
+            setAlertMessage(
+              "Failed to send email. Please check your internet connection."
             );
+            setAlertVisible(true);
+            setAlertCloseAction(() => back);
           }
-          back(); //If Email Verification has error, user will be brought back to login page
+          // back(); //If Email Verification has error, user will be brought back to login page
         }
       };
       sendEmail();
@@ -493,13 +556,19 @@ const RegisterAccount = () => {
           />
         )}
       </View>
-      <View style={styles.footer}>
+      <View style={ isKeyboardVisible ? styles.footer  : styles.footer2}>
         <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>
             {section < 5 ? "Next" : "Register"}
           </Text>
         </TouchableOpacity>
       </View>
+      <CustomAlert
+        visible={alertVisible}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -542,7 +611,15 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    marginBottom: 80,
+    borderRadius: 50,
+  },
+  footer2:{
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 30,
     borderRadius: 50,
   },
@@ -579,13 +656,13 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 30,
     position: "absolute",
-    bottom: 10,
     width: "80%",
     alignItems: "center",
   },
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 17,
+    fontWeight:"bold"
   },
   resendButton: {
     marginTop: 10,

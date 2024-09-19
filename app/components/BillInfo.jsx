@@ -6,17 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Alert,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
-  Modal,
-  Button,
 } from "react-native";
 import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { FontAwesome5 } from "@expo/vector-icons";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
+import CustomAlert from "../components/CustomAlert";
 
 const BillInfo = ({ bill }) => {
   const {
@@ -34,7 +32,10 @@ const BillInfo = ({ bill }) => {
   const navigation = useNavigation();
   const [isEditMode, setEditMode] = useState(false);
   const [newNickname, setNewNickname] = useState(nickname);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
 
   const imageURI = company.ImageURL;
 
@@ -90,15 +91,20 @@ const BillInfo = ({ bill }) => {
 
   const handleSaveNickname = async () => {
     setEditMode(false);
-    console.log("Saving changes of bill");
     if (newNickname !== nickname) {
       if (newNickname !== "") {
-        saveNickname();
+        await saveNickname();
       } else {
-        Alert.alert("Nickname cannot be empty");
+        setAlertTitle("Error");
+        setAlertMessage("Nickname cannot be empty");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
       }
     } else {
-      Alert.alert("No changes have been made to the bill !");
+      setAlertTitle("Error");
+      setAlertMessage("No changes have been made to the bill !");
+      setAlertVisible(true);
+      setAlertCloseAction(() => () => navigation.navigate("Drawer"));
     }
   };
 
@@ -113,14 +119,27 @@ const BillInfo = ({ bill }) => {
       );
 
       if (response.status === 200) {
-        Alert.alert("Nickname updated successfully");
         console.log("Nickname updated successfully");
-      } else {
-        console.log("Failed to update nickname");
-        Alert.alert("Failed to update nickname");
+        setAlertTitle("Success");
+        setAlertMessage("Nickname Updated !");
+        setAlertVisible(true);
+        setAlertCloseAction(() => () => navigation.navigate("Drawer"));
       }
     } catch (error) {
       console.error("Error updating nickname:", error);
+      setAlertTitle("Error");
+      setAlertMessage("Error updating nickname !");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
+    }
+  };
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
     }
   };
 
@@ -239,7 +258,9 @@ const BillInfo = ({ bill }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={()=>navigation.navigate("SingleBillPaymentHistory", { billId: _id })}
+              onPress={() =>
+                navigation.navigate("SingleBillPaymentHistory", { billId: _id })
+              }
             >
               <FontAwesome5 name="eye" size={16} color="black" />
               <Text style={styles.actionText}>History</Text>
@@ -251,10 +272,16 @@ const BillInfo = ({ bill }) => {
             style={styles.saveButton}
             onPress={handleSaveNickname}
           >
-            <Text style={styles.saveText}>Save</Text>
+            <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <CustomAlert
+        visible={alertVisible}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -271,16 +298,15 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     paddingHorizontal: 80,
     paddingVertical: 15,
-
   },
-  saveText: {
+  saveButtonText: {
     color: "#000",
     fontSize: 18,
     fontWeight: "bold",
   },
   container: {
     padding: 20,
-    height:530,
+    height: 530,
     backgroundColor: COLORS.background,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

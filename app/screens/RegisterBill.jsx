@@ -45,11 +45,23 @@ const RegisterBill = ({ route }) => {
   const [selectedBillingCompany, setSelectedBillingCompany] = useState(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [nickname, setNickname] = useState("");
-  const [alertVisible, setAlertVisible] = useState(false);
   const { user } = useContext(AuthContext);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
 
   const back = () => {
     navigation.goBack();
+  };
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
   };
 
   useFocusEffect(
@@ -147,34 +159,47 @@ const RegisterBill = ({ route }) => {
       );
       if (response.status === 201) {
         // Bill created successfully
-        Alert.alert("Success", "Bill registered successfully");
-        navigation.navigate("Drawer");
+        // Alert.alert("Success", "Bill registered successfully");
+        setAlertTitle("Success");
+        setAlertMessage("Bill registered succesfully");
+        setAlertVisible(true);
+        setAlertCloseAction(() => () => navigation.navigate("Drawer"));
       } else {
         // Handle unexpected response status
-        Alert.alert("Error", "Failed to register the bill");
+        // Alert.alert("Error", "Failed to register the bill");
+        setAlertTitle("Error");
+        setAlertMessage("Failed to register the bill");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
       }
     } catch (error) {
       console.error("Failed to register the bill", error);
-      Alert.alert("Error", "An error occurred while registering the bill");
+      setAlertTitle("Error");
+      setAlertMessage("An error occurred while registering the bill");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
+      // Alert.alert("Error", "An error occurred while registering the bill");
     }
   };
 
   const handleRegister = async () => {
     if (section === 2) {
       if (accountNumber.trim() === "") {
-        setAlertVisible(true);
       } else {
         let foundDuplicate = false;
         bills.forEach((bill) => {
           if (bill.accountNumber === accountNumber) {
-            Alert.alert(
+            setAlertTitle("Error");
+            setAlertMessage(
               "The bill with this account number is already registered under your account"
             );
+            setAlertVisible(true);
+            setAlertCloseAction(null);
             foundDuplicate = true;
             return;
           }
         });
-        if (!foundDuplicate){
+        if (!foundDuplicate) {
           setSection(section + 1);
         }
       }
@@ -257,7 +282,13 @@ const RegisterBill = ({ route }) => {
                         source={{ uri: item.ImageURL }}
                         style={styles.image}
                       />
-                      <Text style={{ color: "black", fontSize: 15, fontWeight:"bold" }}>
+                      <Text
+                        style={{
+                          color: "black",
+                          fontSize: 15,
+                          fontWeight: "bold",
+                        }}
+                      >
                         {item.Name}
                       </Text>
                     </View>
@@ -274,7 +305,10 @@ const RegisterBill = ({ route }) => {
             visible={modalVisible}
             onRequestClose={() => setModalVisible(false)}
           >
-            <StatusBar backgroundColor="rgba(0, 0, 0, 0.5)" barStyle="light-content" />
+            <StatusBar
+              backgroundColor="rgba(0, 0, 0, 0.5)"
+              barStyle="light-content"
+            />
             <TouchableOpacity
               style={styles.modalOverlay}
               activeOpacity={1}
@@ -413,10 +447,9 @@ const RegisterBill = ({ route }) => {
       )}
       <CustomAlert
         visible={alertVisible}
-        title="Error"
-        message="Account number cannot be empty."
-        onConfirm={() => setAlertVisible(false)}
-        onCancel={() => setAlertVisible(false)}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
       />
     </>
   );

@@ -1,16 +1,27 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { COLORS, FONTS, serverIPV4 } from "../constant";
 import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import BillInfo from "../components/BillInfo";
 import axios from "axios";
 import ConfirmationModal from "../components/ConfirmationModal";
+import CustomAlert from "../components/CustomAlert";
 
 const BillDetail = ({ route }) => {
   const { bill } = route.params;
   const navigation = useNavigation();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
 
   const deleteBill = async (billId) => {
     try {
@@ -33,7 +44,9 @@ const BillDetail = ({ route }) => {
   const handleDelete = () => {
     deleteBill(bill._id);
     setDeleteModalVisible(false);
-    Alert.alert("The selected bill is successfully deleted");
+    setAlertTitle("Deleted");
+    setAlertMessage("The selected bill is successfully deleted");
+    setAlertVisible(true);
     navigation.navigate("Drawer");
   };
 
@@ -73,6 +86,12 @@ const BillDetail = ({ route }) => {
         onClose={() => setDeleteModalVisible(false)}
         onConfirm={handleDelete}
         message="Are you sure you want to delete this bill?"
+      />
+      <CustomAlert
+        visible={alertVisible}
+        onClose={() => setAlertVisible(false)}
+        title={alertTitle}
+        message={alertMessage}
       />
     </KeyboardAvoidingView>
   );

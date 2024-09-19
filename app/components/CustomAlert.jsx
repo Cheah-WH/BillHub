@@ -1,21 +1,34 @@
 import React from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+} from "react-native";
 import { COLORS, FONTS } from "../constant";
 
-const CustomAlert = ({ visible, title, message, onConfirm }) => {
+const CustomAlert = ({ visible, title, message, onClose }) => {
   return (
     <Modal
       transparent={true}
       animationType="fade"
       visible={visible}
-      onRequestClose={onConfirm}
+      onRequestClose={onClose}
     >
       <View style={styles.overlay}>
+        <StatusBar
+          backgroundColor="rgba(0, 0, 0, 0.5)"
+          barStyle="light-content"
+        />
         <View style={styles.alertBox}>
-          <Text style={styles.alertTitle}>{title}</Text>
-          <Text style={styles.alertMessage}>{message}</Text>
+          <>
+            <Text style={styles.alertTitle}>{title}</Text>
+            <Text style={styles.alertMessage}>{message}</Text>
+          </>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={onConfirm}>
+            <TouchableOpacity style={styles.button} onPress={onClose}>
               <Text style={styles.buttonText}>OK</Text>
             </TouchableOpacity>
           </View>
@@ -33,7 +46,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   alertBox: {
+    justifyContent: "space-between",
     width: 300,
+    height: 250,
     padding: 20,
     backgroundColor: COLORS.background,
     borderRadius: 10,
@@ -52,7 +67,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     justifyContent: "center",
-    alignItems:"center",
+    alignItems: "center",
     width: "100%",
   },
   button: {
@@ -60,10 +75,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderRadius: 15,
     alignItems: "center",
-    width:"70%",
+    width: "70%",
   },
   buttonText: {
-    color: "#fff",
+    color: "#000",
     fontWeight: "bold",
   },
 });

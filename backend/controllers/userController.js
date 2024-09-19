@@ -115,3 +115,30 @@ exports.deductUserCredit = async (req, res) => {
     res.status(500).send("An error occurred while updating the user credit");
   }
 };
+
+// Route to reset password (Forgot Password)
+exports.updateUserPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: "User account not found" });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user's password
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "An error occurred while updating the password", error: err });
+  }
+};
+

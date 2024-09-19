@@ -17,6 +17,7 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useAuth } from "../../backend/AuthContext";
 import axios from "axios";
+import CustomAlert from "../components/CustomAlert";
 
 const BillReminder = () => {
   const { bills, setBills, user } = useAuth();
@@ -34,8 +35,23 @@ const BillReminder = () => {
     ...bills,
   ]);
 
+  // Alert
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
+  };
+
   // Bills are fetched again to retrieve the changes after updating
-  // This fetchBills is different from AuthContext 
+  // This fetchBills is different from AuthContext
   // This fetchBills will update BillsList which include "All Bills"
   // This fetchBills will trigger Agenda to set reminder
   const fetchBills = async (userId) => {
@@ -71,20 +87,26 @@ const BillReminder = () => {
         ]);
 
         // call endpoint to schedule reminders
-        try{
+        try {
           await axios.post(`http://${serverIPV4}:3000/schedule-reminders`, {
             user: user,
             bills: billsWithCompanyData,
           });
-        } catch (error){
-          console.log("Error calling API of schedule reminders: ",error)
+        } catch (error) {
+          console.log("Error calling API of schedule reminders: ", error);
         }
       } else {
-        Alert.alert("Error", "Failed to retrieve bills");
+        setAlertTitle("Error");
+        setAlertMessage("Failed to retrieve bills");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
       }
     } catch (error) {
       console.error("Failed to retrieve bills", error);
-      Alert.alert("Error", "An error occurred while retrieving bills");
+      setAlertTitle("Error");
+      setAlertMessage("An error occured while retrieving bills");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     }
   };
 
@@ -115,7 +137,7 @@ const BillReminder = () => {
       console.log("Calling backend API with data passing: ", reminderData);
       if (selectedBill == "All Bills") {
         const response = await axios.patch(
-          `http://${serverIPV4}:3000/bills/reminder/${user._id}`,
+          `http://${serverIPV4}:3000/bills/user/${user._id}/reminders`,
           {
             Reminder: reminderData,
           }
@@ -128,7 +150,10 @@ const BillReminder = () => {
           }
         );
       }
-      Alert.alert("The bill reminder is updated !");
+      setAlertTitle("Success");
+      setAlertMessage("The bill reminder is updated !");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
       fetchBills(user._id);
     } catch (error) {
       console.error("Error updating bill reminder:", error);
@@ -148,7 +173,12 @@ const BillReminder = () => {
 
   useEffect(() => {
     if (selectedBillId == 0) {
-      Alert.alert(`Reminder setting for "ALL BILLS" will not be shown as some bill may have customized setting`);
+      setAlertTitle("Note");
+      setAlertMessage(
+        `Reminder setting for "ALL BILLS" will not be shown as some bill may have customized setting`
+      );
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     }
   }, [selectedBillId]);
 
@@ -358,6 +388,13 @@ const BillReminder = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      <CustomAlert
+        visible={alertVisible}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </View>
   );
 };

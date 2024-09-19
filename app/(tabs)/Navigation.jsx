@@ -12,6 +12,7 @@ import MyBills from "../screens/MyBills";
 import BillPaymentHistory from "../screens/BillPaymentHistory";
 import SingleBillPaymentHistory from "../screens/SingleBillPaymentHistory";
 import AutoBilling from "../screens/AutoBilling";
+import BillAnalysis from "../screens/BillAnalysis";
 import BillPaymentAnalysis from "../screens/BillPaymentAnalysis";
 import BillingAnalysis from "../screens/BillingAnalysis";
 import BillReminder from "../screens/BillReminder";
@@ -26,6 +27,7 @@ import PaymentConfirmation from "../screens/PaymentConfirmation";
 import Reload from "../screens/Reload";
 import Receipt from "../screens/Receipt";
 import ReceiptReview from "../screens/ReceiptReview";
+import ForgotPassword from "../screens/ForgotPassword";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -68,7 +70,7 @@ function DrawerNavigation() {
       />
       <Drawer.Screen
         name="Bill Analysis"
-        component={BillPaymentAnalysis}
+        component={BillAnalysis}
         options={{ headerShown: false }}
       />
       <Drawer.Screen
@@ -97,6 +99,7 @@ export default function Navigation() {
       <Stack.Screen name="Notification" component={Notification} options={{ headerShown: false }}/>
       <Stack.Screen name="MyProfile" component={MyProfile} options={{ headerShown: false }}/>
       <Stack.Screen name="RegisterBill" component={RegisterBill} options={{ headerShown: false }}/>
+      <Stack.Screen name="BillAnalysis" component={BillAnalysis} options={{ headerShown: false }}/>
       <Stack.Screen name="BillPaymentAnalysis" component={BillPaymentAnalysis} options={{ headerShown: false }}/>
       <Stack.Screen name="BillingAnalysis" component={BillingAnalysis} options={{ headerShown: false }}/>
       <Stack.Screen name="AutoBilling" component={AutoBilling} options={{ headerShown: false }}/>
@@ -112,6 +115,7 @@ export default function Navigation() {
       <Stack.Screen name="Reload" component={Reload} options={{ headerShown: false }}/>
       <Stack.Screen name="Receipt" component={Receipt} options={{ headerShown: false }}/>
       <Stack.Screen name="ReceiptReview" component={ReceiptReview} options={{ headerShown: false }}/>
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ headerShown: false }}/>
     </Stack.Navigator>
   );
 }

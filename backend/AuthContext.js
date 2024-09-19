@@ -29,7 +29,6 @@ const AuthProvider = ({ children }) => {
     setUser(userData.user);
     await storeUserData(defaultToken, userData.user);
     fetchBills(userData.user._id);
-    Alert.alert("Welcome Back", userData.name);
   };
 
   const logout = async () => {
@@ -70,6 +69,15 @@ const AuthProvider = ({ children }) => {
           })
         );
         setBills(billsWithCompanyData);
+        // Schedule Reminder
+        // try {
+        //   await axios.post(`http://${serverIPV4}:3000/schedule-reminders`, {
+        //     user: user,
+        //     bills: billsWithCompanyData,
+        //   });
+        // } catch (error) {
+        //   console.log("Error calling API of schedule reminders: ", error);
+        // }
       } else {
         Alert.alert("Error", "Failed to retrieve bills");
       }

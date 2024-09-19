@@ -20,6 +20,7 @@ import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useAuth } from "../../backend/AuthContext";
 import axios from "axios";
 import ConfirmationModal from "../components/ConfirmationModal";
+import CustomAlert from "../components/CustomAlert";
 
 const AutoBilling = () => {
   const navigation = useNavigation();
@@ -33,6 +34,36 @@ const AutoBilling = () => {
   const [autoBills, setAutoBills] = useState([]);
   const [autoBillsDetail, setAutoBillsDetail] = useState([]);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState("");
+  const [filteredBills, setFilteredBills] = useState([]); 
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
+
+  const fetchAutoBillingBills = async () => {
+    try {
+      const response = await axios.get(
+        `http://${serverIPV4}:3000/auto-billing/user/${user._id}`
+      );
+
+      if (response.status === 200) {
+        setAutoBills(response.data);
+      } else {
+        setAlertTitle("Error");
+        setAlertMessage("Failed to fetch auto-billing bills");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
+      }
+    } catch (error) {
+      console.error("Error fetching auto-billing bills:", error);
+      setAlertTitle("Error");
+      setAlertMessage("Error fetching auto-billing bills: ", error);
+      setAlertVisible(true);
+      setAlertCloseAction(null);
+    }
+  };
 
   useEffect(() => {
     setAutoPaymentDate("billingdate");
@@ -40,22 +71,6 @@ const AutoBilling = () => {
     setInputValue("");
 
     if (section === 0) {
-      const fetchAutoBillingBills = async () => {
-        try {
-          const response = await axios.get(
-            `http://${serverIPV4}:3000/auto-billing/user/${user._id}`
-          );
-
-          if (response.status === 200) {
-            setAutoBills(response.data);
-          } else {
-            Alert.alert("Failed to fetch auto-billing bills");
-          }
-        } catch (error) {
-          console.error("Error fetching auto-billing bills:", error);
-          Alert.alert("Error fetching auto-billing bills: ", error);
-        }
-      };
       fetchAutoBillingBills();
     }
   }, [section]);
@@ -80,6 +95,14 @@ const AutoBilling = () => {
       setAutoBillsDetail(updatedAutoBills);
     }
   }, [autoBills]);
+
+  useEffect(() => {
+    if (bills && autoBills) {
+      const autoBillIds = autoBills.map(autoBill => autoBill.billId._id);
+      const filteredBillsList = bills.filter(bill => !autoBillIds.includes(bill._id));
+      setFilteredBills(filteredBillsList); 
+    }
+  }, [autoBills, bills]);
 
   useEffect(() => {
     setInputValue("");
@@ -120,7 +143,12 @@ const AutoBilling = () => {
       await saveAutoBilling(autoBillingDetails);
       setSection(0);
     } catch (error) {
-      Alert.alert("Failed to register auto billing: ", error.message);
+      setAlertTitle("Error");
+      setAlertMessage(
+        "Failed to register auto-billing, please enter the amount"
+      );
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     }
   };
 
@@ -130,24 +158,54 @@ const AutoBilling = () => {
         `http://${serverIPV4}:3000/auto-billing`,
         autoBillingDetails
       );
-
-      Alert.alert(
-        "The bills has been set to auto-billing ! The bill reminders are turned off"
+      setAlertTitle("Note");
+      setAlertMessage(
+        "The bill has been set to auto-billing ! The bill reminder is turned off"
       );
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     } catch (error) {
       console.error("Error:", error);
-      Alert.alert(error);
+      setAlertTitle("Error");
+      setAlertMessage("Error saving auto billing, ", error.message);
+      setAlertVisible(true);
+      setAlertCloseAction(null);
       throw error;
     }
   };
 
-  const handleDelete = () => {
-    deleteAutoBilling;
+  const handleDelete = async () => {
+    console.log("Confirm Deletion");
+    console.log("Delete ID : ", deleteId);
     setDeleteModalVisible(false);
-  }
-  const deleteAutoBilling = () => {
-    console.log("Hehe")
-  }
+
+    try {
+      const response = await axios.delete(
+        `http://${serverIPV4}:3000/auto-billing/${deleteId}`
+      );
+      setAlertTitle("Note");
+      setAlertMessage(
+        "The auto-billing for the selected bill has been removed !"
+      );
+      setAlertVisible(true);
+      setAlertCloseAction(()=> fetchAutoBillingBills);
+    } catch (error) {
+      setAlertTitle("Error");
+      setAlertMessage("Error deleting auto-billing");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
+      throw error;
+    }
+  };
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -218,7 +276,12 @@ const AutoBilling = () => {
                       <Text>RM {item.amount.toFixed(2)}</Text>
                     </View>
                     <View style={styles.billItemRight}>
-                      <TouchableOpacity onPress={() => {setDeleteModalVisible(true)}}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setDeleteModalVisible(true);
+                          setDeleteId(item._id);
+                        }}
+                      >
                         <AntDesignIcon
                           name="minuscircle"
                           size={25}
@@ -421,7 +484,7 @@ const AutoBilling = () => {
             >
               <Text style={styles.modalTitle}>Select Bill</Text>
               <FlatList
-                data={bills}
+                data={filteredBills}
                 keyExtractor={(item) => item._id}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -448,8 +511,16 @@ const AutoBilling = () => {
         <ConfirmationModal
           visible={deleteModalVisible}
           onClose={() => setDeleteModalVisible(false)}
-          onConfirm={()=>handleDelete()}
+          onConfirm={() => handleDelete()}
           message="Are you sure you want to remove auto-billing for this bill ?"
+        />
+
+        {/* Modal for alert message */}
+        <CustomAlert
+          visible={alertVisible}
+          onClose={handleAlertClose}
+          title={alertTitle}
+          message={alertMessage}
         />
       </View>
     </KeyboardAvoidingView>

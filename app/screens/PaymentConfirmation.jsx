@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
 import { useStripe } from "@stripe/stripe-react-native";
+import CustomAlert from "../components/CustomAlert";
 
 const PaymentConfirmation = ({ route }) => {
   const { selectedBillData } = route.params;
@@ -22,6 +23,12 @@ const PaymentConfirmation = ({ route }) => {
   const navigation = useNavigation();
   const { user, setUser } = useAuth();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+
+  // Custom Alert
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
 
   const createPaymentIntent = async (amount) => {
     try {
@@ -38,7 +45,10 @@ const PaymentConfirmation = ({ route }) => {
       return clientSecret;
     } catch (error) {
       console.error("Error creating payment intent:", error.message);
-      Alert.alert("Payment Error", error.message);
+      setAlertTitle("Payment Error");
+      setAlertMessage(error.message);
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     }
   };
 
@@ -51,13 +61,25 @@ const PaymentConfirmation = ({ route }) => {
     0
   );
 
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
+  };
+
   const handlePay = async () => {
     // Check credit if BillHub Credit is used
     if (paymentMethod == "BillHub Credit") {
       if (totalAmount > user.credit) {
-        Alert.alert(
-          "Insufficient Credit, please reload first or use other payment method"
+        setAlertTitle("Insufficient Credit");
+        setAlertMessage(
+          "Please reload first or use another payment method"
         );
+        setAlertVisible(true);
+        setAlertCloseAction(null);
         return;
       }
     }
@@ -93,7 +115,7 @@ const PaymentConfirmation = ({ route }) => {
         console.log("Step 3 error: ", paymentResponse.error);
         return;
       }
-    } // May consider BillHub Credit's password for transaction 
+    } // May consider BillHub Credit's password for transaction
 
     try {
       const dateTime = Date.now();
@@ -136,7 +158,10 @@ const PaymentConfirmation = ({ route }) => {
       navigation.navigate("Receipt", { paymentHistories, totalAmount });
     } catch (error) {
       console.error("Error saving payment histories:", error);
-      Alert.alert("Error", "Failed to save payment histories.");
+      setAlertTitle("Error");
+      setAlertMessage("Failed to save payment histories.");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     }
   };
 
@@ -196,6 +221,12 @@ const PaymentConfirmation = ({ route }) => {
           </View>
         </View>
       </View>
+      <CustomAlert
+        visible={alertVisible}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </View>
   );
 };

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importing the icon library
 import { COLORS, FONTS } from "../constant";
+import CustomAlert from "../components/CustomAlert";
 
 const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
   const {
@@ -47,6 +48,9 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newPaymentAmount, setNewPaymentAmount] = useState("");
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
 
   const handleEditPress = () => {
     setIsModalVisible(true);
@@ -65,10 +69,11 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
       amount > 999 ||
       !/^\d+(\.\d{1,2})?$/.test(newPaymentAmount)
     ) {
-      Alert.alert(
-        "Invalid Input",
+      setAlertTitle("Invalid Input");
+      setAlertMessage(
         "Please enter a valid amount up to 999 with 2 decimal places."
       );
+      setAlertVisible(true);
       return;
     }
     // Pass the updated amount to the parent component
@@ -76,7 +81,6 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
     setIsModalVisible(false);
     setNewPaymentAmount("");
   };
-  
 
   return (
     <View style={styles.container}>
@@ -175,6 +179,12 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
           </View>
         </View>
       </Modal>
+      <CustomAlert
+        visible={alertVisible}
+        onClose={() => setAlertVisible(false)}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </View>
   );
 };

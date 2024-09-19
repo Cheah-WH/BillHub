@@ -19,6 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import Feather from "react-native-vector-icons/Feather";
 import { AuthContext } from "../../backend/AuthContext";
+import CustomAlert from "../components/CustomAlert";
 
 const images = [
   { id: 1, uri: require("../images/Login/login1.png") },
@@ -35,6 +36,12 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { logout, login } = useContext(AuthContext);
+
+  // CustomAlert
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
 
   useEffect(() => {
     if (section === 0) {
@@ -54,15 +61,21 @@ const Login = () => {
 
   const handleLogin = async () => {
     if (!identifier || !password) {
-      Alert.alert("Error", "Please fill in both fields.");
+      setAlertTitle("Error");
+      setAlertMessage("Please fill in both fields");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
       return;
     }
 
     try {
-      const response = await axios.post(`http://${serverIPV4}:3000/users/login`, {
-        identifier,
-        password,
-      });
+      const response = await axios.post(
+        `http://${serverIPV4}:3000/users/login`,
+        {
+          identifier,
+          password,
+        }
+      );
 
       if (response.status === 200) {
         console.log(
@@ -74,17 +87,30 @@ const Login = () => {
       }
     } catch (error) {
       if (error.response) {
-        Alert.alert("Error", error.response.data.message);
+        setAlertTitle("Error");
+        setAlertMessage(error.response.data.message);
+        setAlertVisible(true);
+        setAlertCloseAction(null);
       } else {
-        Alert.alert("Error", "An error occurred during login");
+        setAlertTitle("Error");
+        setAlertMessage("An error occurred during login");
+        setAlertVisible(true);
+        setAlertCloseAction(null);
       }
     }
   };
 
   const handleForgotPassword = () => {
-    console.log("Forgot Password is Clicked");
-    // Navigate to Forgot Password screen
-    // navigation.navigate("ForgotPassword");
+    navigation.navigate("ForgotPassword");
+  };
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
   };
 
   return (
@@ -199,6 +225,12 @@ const Login = () => {
                       <Text style={styles.ButtonText}>Login</Text>
                     </TouchableOpacity>
                   </View>
+                  <CustomAlert
+                    visible={alertVisible}
+                    onClose={handleAlertClose}
+                    title={alertTitle}
+                    message={alertMessage}
+                  />
                 </KeyboardAvoidingView>
               </View>
             </View>

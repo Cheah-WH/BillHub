@@ -7,5 +7,6 @@ router.post('/login', userController.loginUser);
 router.get('/:userId', userController.getUserById);
 router.patch('/:id/credit', userController.updateUserCredit);
 router.patch('/:id/deduct', userController.deductUserCredit);
+router.patch('/resetPassword', userController.updateUserPassword);
 
 module.exports = router;

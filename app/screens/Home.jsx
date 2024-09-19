@@ -20,6 +20,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../../backend/AuthContext";
 import BillItem from "../components/BillItem";
 import axios from "axios";
+import CustomAlert from "../components/CustomAlert";
 
 const HomeScreen = () => {
   const { bills, user, setUser, fetchBills } = useAuth();
@@ -28,6 +29,9 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const isFocused = useIsFocused(); // Hook to get focus status
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
 
   useEffect(() => {
     console.log("user:", user);
@@ -57,7 +61,9 @@ const HomeScreen = () => {
       await fetchBills(user._id); // Use fetchBills from AuthContext
     } catch (error) {
       console.error("Failed to refresh bills", error);
-      Alert.alert("Error", "An error occurred while refreshing bills");
+      setAlertTitle("Error");
+      setAlertMessage("An error occurred while refreshing bills");
+      setAlertVisible(true);
     }
     setRefreshing(false);
   };
@@ -188,7 +194,7 @@ const HomeScreen = () => {
             <TouchableOpacity
               style={{ alignItems: "center" }}
               onPress={() => {
-                navigation.navigate("BillPaymentAnalysis");
+                navigation.navigate("BillAnalysis");
               }}
             >
               <Image
@@ -225,6 +231,12 @@ const HomeScreen = () => {
           <Text style={{ fontWeight: "bold", fontSize: 20 }}>Pay</Text>
         </TouchableOpacity>
       </View>
+      <CustomAlert
+        visible={alertVisible}
+        onClose={() => setAlertVisible(false)}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </View>
   );
 };

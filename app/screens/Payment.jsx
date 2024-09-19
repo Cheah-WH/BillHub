@@ -16,12 +16,16 @@ import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import BillPaymentItem from "../components/BillPaymentItem";
 import { useAuth } from "../../backend/AuthContext";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import CustomAlert from "../components/CustomAlert";
 
 const Payment = ({ route }) => {
   const { bills, user } = useAuth();
   const [localBills, setLocalBills] = useState(bills);
   const [selectedBills, setSelectedBills] = useState([]);
   const [totalSelectedAmount, setTotalSelectedAmount] = useState(0);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
 
   useEffect(() => {
     const { billData } = route.params || {};
@@ -82,15 +86,12 @@ const Payment = ({ route }) => {
         (bill.paymentAmount && bill.paymentAmount < 1) ||
         (!bill.paymentAmount && bill.outStandingAmount < 1)
       ) {
-        Alert.alert(
-          "Invalid Amount",
-          "Please ensure all payment amounts are at least RM 1.00",
-          [{ text: "OK" }]
-        );
+        setAlertTitle("Invalid Amount");
+        setAlertMessage("Please ensure all payment amounts are at least RM 1.00");
+        setAlertVisible(true);
         return;
       }
     }
-
     navigation.navigate("PaymentConfirmation", { selectedBillData });
   };
 
@@ -166,6 +167,12 @@ const Payment = ({ route }) => {
             </TouchableOpacity>
           </View>
         </View>
+        <CustomAlert
+          visible={alertVisible}
+          onClose={() => setAlertVisible(false)}
+          title={alertTitle}
+          message={alertMessage}
+        />
       </View>
     </View>
   );

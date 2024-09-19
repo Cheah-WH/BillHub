@@ -16,11 +16,26 @@ import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import { useStripe } from "@stripe/stripe-react-native";
 import { useAuth } from "../../backend/AuthContext";
 import axios from "axios";
+import CustomAlert from "../components/CustomAlert";
 
 const ReloadPage = () => {
   const [amount, setAmount] = useState();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { user, setUser } = useAuth();
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertCloseAction, setAlertCloseAction] = useState(null);
+
+  const handleAlertClose = () => {
+    setAlertVisible(false); // Hide the alert
+
+    // Execute Navigation
+    if (alertCloseAction) {
+      alertCloseAction();
+    }
+  };
 
   const navigation = useNavigation();
 
@@ -43,17 +58,26 @@ const ReloadPage = () => {
       return clientSecret;
     } catch (error) {
       console.error("Error creating payment intent:", error.message);
-      Alert.alert("Payment Error", error.message);
+      setAlertTitle("Payment Error");
+      setAlertMessage(error.message);
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     }
   };
 
   const onReload = async () => {
     if (!amount) {
-      Alert.alert("Please enter or select a reload amount");
+      setAlertTitle("Empty Field");
+      setAlertMessage("Please enter or select a reload amount");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
       return;
     }
     if (amount < 10) {
-      Alert.alert("Reload amount must be at least RM10");
+      setAlertTitle("Error");
+      setAlertMessage("Reload amount must be at least RM 10");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
       return;
     }
 
@@ -89,14 +113,20 @@ const ReloadPage = () => {
     }
 
     // 4. Handle Payment Result
-     try {
+    try {
       const updatedUser = await updateCredit(parseFloat(amount));
       setUser(updatedUser);
-      Alert.alert("Success", "Credit reloaded successfully");
+      setAlertTitle("Success");
+      setAlertMessage("Credit reloaded succesfully");
+      setAlertVisible(true);
+      setAlertCloseAction(null);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
-      Alert.alert("Error", errorMessage);
+        setAlertTitle("Error");
+        setAlertMessage(errorMessage);
+        setAlertVisible(true);
+        setAlertCloseAction(null);
     }
   };
 
@@ -176,6 +206,13 @@ const ReloadPage = () => {
           <Text style={styles.reloadText}>Reload</Text>
         </TouchableOpacity>
       </View>
+
+      <CustomAlert
+        visible={alertVisible}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -217,7 +254,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.greyBackground,
-    paddingBottom:25,
+    paddingBottom: 25,
   },
   reloadButton: {
     justifyContent: "center",
