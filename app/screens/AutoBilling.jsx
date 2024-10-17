@@ -21,6 +21,7 @@ import { useAuth } from "../../backend/AuthContext";
 import axios from "axios";
 import ConfirmationModal from "../components/ConfirmationModal";
 import CustomAlert from "../components/CustomAlert";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const AutoBilling = () => {
   const navigation = useNavigation();
@@ -35,7 +36,7 @@ const AutoBilling = () => {
   const [autoBillsDetail, setAutoBillsDetail] = useState([]);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteId, setDeleteId] = useState("");
-  const [filteredBills, setFilteredBills] = useState([]); 
+  const [filteredBills, setFilteredBills] = useState([]);
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -98,9 +99,11 @@ const AutoBilling = () => {
 
   useEffect(() => {
     if (bills && autoBills) {
-      const autoBillIds = autoBills.map(autoBill => autoBill.billId._id);
-      const filteredBillsList = bills.filter(bill => !autoBillIds.includes(bill._id));
-      setFilteredBills(filteredBillsList); 
+      const autoBillIds = autoBills.map((autoBill) => autoBill.billId._id);
+      const filteredBillsList = bills.filter(
+        (bill) => !autoBillIds.includes(bill._id)
+      );
+      setFilteredBills(filteredBillsList);
     }
   }, [autoBills, bills]);
 
@@ -188,7 +191,7 @@ const AutoBilling = () => {
         "The auto-billing for the selected bill has been removed !"
       );
       setAlertVisible(true);
-      setAlertCloseAction(()=> fetchAutoBillingBills);
+      setAlertCloseAction(() => fetchAutoBillingBills);
     } catch (error) {
       setAlertTitle("Error");
       setAlertMessage("Error deleting auto-billing");
@@ -296,9 +299,13 @@ const AutoBilling = () => {
               />
             ) : (
               <View style={styles.noBillView}>
+                <MaterialCommunityIcons
+                  name="note-alert-outline"
+                  size={100}
+                  color={COLORS.primary}
+                />
                 <Text style={{ textAlign: "center" }}>
-                  No bill is registered with Auto-Billing, start now by adding a
-                  bill
+                  No bill is registered with Auto-Billing, start now by adding a bill
                 </Text>
               </View>
             )}

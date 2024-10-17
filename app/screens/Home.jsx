@@ -21,6 +21,7 @@ import { useAuth } from "../../backend/AuthContext";
 import BillItem from "../components/BillItem";
 import axios from "axios";
 import CustomAlert from "../components/CustomAlert";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const HomeScreen = () => {
   const { bills, user, setUser, fetchBills } = useAuth();
@@ -170,7 +171,16 @@ const HomeScreen = () => {
               }
             />
           ) : (
-            <Text style={styles.noBillsText}>No bills available</Text>
+            <View style={{ justifyContent: "center", alignItems:"center", height: 250 }}>
+              <MaterialCommunityIcons
+                name="note-alert-outline"
+                size={100}
+                color={COLORS.primary} 
+              />
+              <Text style={styles.noBillsText}>
+                No bills found. Register Now !
+              </Text>
+            </View>
           )}
         </View>
       </View>
@@ -390,6 +400,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     color: COLORS.text,
+    fontWeight: "bold",
   },
 });
 

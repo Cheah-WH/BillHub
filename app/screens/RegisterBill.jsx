@@ -72,10 +72,6 @@ const RegisterBill = ({ route }) => {
   );
 
   useEffect(() => {
-    console.log("Billing Companies State: ", billingCompanies);
-  }, [billingCompanies]);
-
-  useEffect(() => {
     if (section === 1) {
       setSelectedBillingCompany(null);
       setAccountNumber("");

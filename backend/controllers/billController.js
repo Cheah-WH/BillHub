@@ -63,6 +63,7 @@ exports.getBillsByBillId = async (req, res) => {
 };
 
 // Bill Information Update (Third Party - Billing Company)
+// Save billing histories
 // Check if Reminder has to be sent or schedule
 // Check if Auto-billing has to be run or schedule
 exports.updateBill = async (req, res) => {
@@ -77,6 +78,7 @@ exports.updateBill = async (req, res) => {
     }
 
     const { billingAmount, billingDate, dueDate } = req.body;
+
     if (billingAmount > 0) {
       const billingHistory = new BillingHistory({
         // Create a BillingHistory record
@@ -87,8 +89,13 @@ exports.updateBill = async (req, res) => {
         billingCompanyId: updatedBill.billingCompanyId,
         billId: updatedBill._id,
       });
-      await billingHistory.save();
-
+      try {
+        const savedBillingHistory = await billingHistory.save();
+        console.log("billingHistory saved: ", savedBillingHistory);
+      } catch (error) {
+        return res.status(500).send("Error saving BillingHistory");
+      }
+    
       // Check if the bill is registered with auto-billing
       const autoBilling = await AutoBilling.findOne({
         billId: updatedBill._id,
@@ -235,11 +242,11 @@ exports.updateBill = async (req, res) => {
               Bill Released Reminder
               \nYour bill "${updatedBill.nickname}" with account number ${
                 updatedBill.accountNumber
-              } from ${company.Name} is due on ${new Date(
+              } from Air Selangor is due on ${new Date(
                 updatedBill.dueDate
               ).toDateString()}.
               \nOutstanding Amount: RM ${updatedBill.outStandingAmount}
-              \nOverdue Amount: RM ${updatedBill.overdueAmount}
+              \nOverdue Amount: RM 0
             `;
               // Retrieve user email from database
               try {
@@ -264,13 +271,11 @@ exports.updateBill = async (req, res) => {
             if (updatedBill.Reminder.method.notification) {
               const message = `Reminder: Your bill ${
                 updatedBill.nickname
-              } with account number ${updatedBill.accountNumber} from ${
-                company.name
-              } is due on ${new Date(
+              } with account number ${updatedBill.accountNumber} from Air Selangor is due on ${new Date(
                 updatedBill.dueDate
               ).toDateString()}. For your information, the latest outstanding amount is RM ${
                 updatedBill.outStandingAmount
-              } and the overdue amount is RM ${updatedBill.overdueAmount}
+              } and the overdue amount is RM 0
             `;
               try {
                 const notification = new Notification({

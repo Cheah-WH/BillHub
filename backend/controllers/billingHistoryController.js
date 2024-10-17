@@ -1,26 +1,46 @@
 
 const BillingHistory = require('../models/models/BillingHistory');
+const Bill = require('../models/models/Bill');
 const Notification = require('../models/models/Notification');
+
 
 // Create Billing History
 exports.createBillingHistory = async (req, res) => {
     try {
-        const billingHistory = req.body; // Expect a single billing record
+        // Extract required fields from request body
+        const { billId, billingDate, billingAmount, status } = req.body;
 
         // Validate input
-        if (typeof billingHistory !== 'object' || Array.isArray(billingHistory)) {
-            return res.status(400).json({ message: "Input should be a single billing record." });
+        if (!billId || !billingDate || !billingAmount || !status) {
+            return res.status(400).json({ message: "All fields are required: billId, billingDate, billingAmount, status." });
         }
 
-        // Create a single billing history
-        const result = await BillingHistory.create(billingHistory);
+        // Retrieve the Bill to get userId and billingCompanyId
+        const bill = await Bill.findById(billId);
+        if (!bill) {
+            return res.status(404).json({ message: "Bill not found." });
+        }
 
+        // Create a new BillingHistory record
+        const billingHistory = new BillingHistory({
+            billId: bill._id,
+            userId: bill.userId,
+            billingCompanyId: bill.billingCompanyId,
+            billingDate: new Date(billingDate),
+            billingAmount: billingAmount,
+            status: status,
+        });
+
+        // Save the billing history record
+        const result = await billingHistory.save();
+        console.log("Result: ",result)
         res.status(201).json(result);
     } catch (error) {
         console.error("Error creating billing history:", error);
         res.status(500).json({ message: "Server error", error });
     }
 };
+
 
 // Retrieve Billing History by User ID
 exports.getBillingHistoryByUserId = async (req, res) => {

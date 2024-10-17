@@ -17,6 +17,7 @@ import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import BillItem from "../components/BillItem";
 import { useAuth } from "../../backend/AuthContext";
 import { CheckBox } from "react-native-elements";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const categories = [
   "Postpaid",
@@ -64,8 +65,10 @@ const MyBills = ({ route }) => {
     } else {
       // Sort by outstanding amount
       sortedBills = [...localBills].sort((a, b) => {
-        if (a.outStandingAmount === undefined || a.outStandingAmount === null) return 1;
-        if (b.outStandingAmount === undefined || b.outStandingAmount === null) return -1;
+        if (a.outStandingAmount === undefined || a.outStandingAmount === null)
+          return 1;
+        if (b.outStandingAmount === undefined || b.outStandingAmount === null)
+          return -1;
         return b.outStandingAmount - a.outStandingAmount;
       });
     }
@@ -131,15 +134,34 @@ const MyBills = ({ route }) => {
           </View>
         </View>
         <View style={styles.body}>
-          <FlatList
-            data={filteredBills}
-            keyExtractor={(bill) => bill._id}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => navigateToBillDetail(item)}>
-                <BillItem bill={item} />
-              </TouchableOpacity>
-            )}
-          />
+          {filteredBills.length > 0 ? (
+            <FlatList
+              data={filteredBills}
+              keyExtractor={(bill) => bill._id}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => navigateToBillDetail(item)}>
+                  <BillItem bill={item} />
+                </TouchableOpacity>
+              )}
+            />
+          ) : (
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: 550,
+              }}
+            >
+              <MaterialCommunityIcons
+                name="note-alert-outline"
+                size={100}
+                color={COLORS.primary}
+              />
+              <Text style={styles.noBillsText}>
+                No bills found. Register Now !
+              </Text>
+            </View>
+          )}
         </View>
       </View>
       <Modal
@@ -148,7 +170,10 @@ const MyBills = ({ route }) => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <StatusBar backgroundColor="rgba(0, 0, 0, 0.5)" barStyle="light-content" />
+        <StatusBar
+          backgroundColor="rgba(0, 0, 0, 0.5)"
+          barStyle="light-content"
+        />
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}

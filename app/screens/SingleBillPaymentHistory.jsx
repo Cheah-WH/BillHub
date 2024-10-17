@@ -24,11 +24,6 @@ const SingleBillPaymentHistory = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    console.log("Payment History: ", paymentHistory);
-    console.log("Billing History: ", billingHistory);
-  }, [paymentHistory, billingHistory]);
-
   const fetchPaymentHistory = async () => {
     setLoading(true);
     try {

@@ -57,10 +57,6 @@ const Receipt = ({ route }) => {
     setBillingDetails(details);
   };
 
-  useEffect(() => {
-    console.log("Billing Details:", billingDetails);
-  }, [billingDetails]);
-
   console.log("paymentHistories:", paymentHistories);
 
   const handleBackToHome = () => {

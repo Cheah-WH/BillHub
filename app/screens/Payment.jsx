@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Alert,
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import Checkbox from "expo-checkbox";
@@ -32,7 +30,7 @@ const Payment = ({ route }) => {
     if (billData) {
       setLocalBills(billData);
     } else {
-      setLocalBills(bills); // Set local bills from context if no route params
+      setLocalBills(bills); 
     }
   }, [route.params, bills]);
 
@@ -119,7 +117,7 @@ const Payment = ({ route }) => {
           <KeyboardAwareScrollView>
             {localBills.map((item) => (
               <View
-                key={item._id} // The key should be unique for each item
+                key={item._id} 
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",

@@ -423,6 +423,7 @@ const RegisterAccount = () => {
   useEffect(() => {
     if (section === 4) {
       const generatedOTP = generateOTP();
+      console.log("Generated Email OTP : ",generatedOTP);
       setEmailOTP(generatedOTP);
     }
   }, [section]);

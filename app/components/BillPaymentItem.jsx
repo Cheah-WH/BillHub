@@ -7,10 +7,9 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  Alert,
   StatusBar,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Importing the icon library
+import Icon from "react-native-vector-icons/MaterialIcons";
 import { COLORS, FONTS } from "../constant";
 import CustomAlert from "../components/CustomAlert";
 
@@ -30,7 +29,7 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
   const formatDate = (date) => {
     const d = new Date(date);
     const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const month = String(d.getMonth() + 1).padStart(2, "0"); 
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -39,7 +38,6 @@ const BillPaymentItem = ({ bill, onPaymentAmountChange }) => {
   const formattedOutstandingAmount = outStandingAmount
     ? outStandingAmount.toFixed(2)
     : "0.00";
-  const overdue = overdueAmount && overdueAmount > 0;
 
   // Calculate the number of days before the due date
   const daysBeforeDue = dueDate

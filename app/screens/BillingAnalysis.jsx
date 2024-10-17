@@ -57,10 +57,6 @@ const BillingAnalysis = () => {
   };
 
   useEffect(() => {
-    console.log("Billing History: ", billingHistory);
-  }, [billingHistory]);
-
-  useEffect(() => {
     console.log("BillPieChart Data: ", pieChartData);
   }, [pieChartData]);
 

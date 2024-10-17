@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import axios from "axios";
 import { useAuth } from "../../backend/AuthContext";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const BillPaymentHistory = () => {
   const navigation = useNavigation();
@@ -92,13 +93,17 @@ const BillPaymentHistory = () => {
           />
         </View>
         <View style={styles.itemDetails}>
-        <Text style={{ fontSize:11, color:"grey", fontWeight:"bold"}}>Name</Text>
+          <Text style={{ fontSize: 11, color: "grey", fontWeight: "bold" }}>
+            Name
+          </Text>
           <Text style={styles.itemText}>
             {item.billId.nickname
               ? item.billId.nickname
               : item.billId.accountNumber}
           </Text>
-          <Text style={{ fontSize:11, color:"grey",  fontWeight:"bold"}}>Payment Date</Text>
+          <Text style={{ fontSize: 11, color: "grey", fontWeight: "bold" }}>
+            Payment Date
+          </Text>
           <Text style={styles.itemText}>
             {new Date(item.paymentDate).toLocaleDateString("en-GB")}
           </Text>
@@ -157,6 +162,26 @@ const BillPaymentHistory = () => {
             style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
           >
             <Text>Loading...</Text>
+          </View>
+        ) : Object.keys(groupedHistory).length === 0 ? (
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              height: 550,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="note-alert-outline"
+              size={100}
+              color={COLORS.primary}
+            />
+            <Text style={styles.noBillsText}>
+              No histories found. 
+            </Text>
+            <Text style={styles.noBillsText}>
+              Make Payment Now !
+            </Text>
           </View>
         ) : (
           <FlatList
@@ -259,6 +284,9 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginLeft: 10,
   },
+  noBillsText:{
+    fontWeight:"bold",
+  }
 });
 
 export default BillPaymentHistory;
